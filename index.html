@@ -3,150 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WhatsApp Private</title>
+    <title>WhatsApp Ultimate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
-        :root {
-            --wa-header: #008069;
-            --wa-bg: #efeae2;
-            --wa-bubble-me: #d9fdd3;
-            --wa-bubble-them: #ffffff;
-            --wa-input-bg: #ffffff;
-        }
-
+        :root { --wa-header: #008069; --wa-bg: #efeae2; --wa-bubble-me: #d9fdd3; --wa-bubble-them: #ffffff; }
         * { box-sizing: border-box; }
+        body { background-color: #d1d7db; font-family: Helvetica, Arial, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
 
-        body {
-            background-color: #d1d7db;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            /* PENTING: 100dvh menyesuaikan tinggi browser HP termasuk address bar */
-            height: 100dvh; 
-            width: 100vw;
-            overflow: hidden; 
-            display: flex;
-            justify-content: center;
-        }
+        #app-frame { width: 100%; height: 100%; background-color: var(--wa-bg); display: flex; flex-direction: column; position: relative; }
+        @media (min-width: 768px) { #app-frame { max-width: 450px; height: 95dvh; margin-top: 2.5vh; } }
 
-        /* FRAME UTAMA (Mobile Friendly) */
-        #app-frame {
-            width: 100%;
-            height: 100%;
-            background-color: var(--wa-bg);
-            display: flex;
-            flex-direction: column; /* Susunan: Header -> Chat -> Input */
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
+        .chat-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.4; z-index: 0; pointer-events: none; }
 
-        @media (min-width: 768px) {
-            #app-frame { max-width: 450px; height: 95dvh; margin-top: 2.5vh; border-radius: 0; } 
-            body { align-items: center; }
-        }
+        .wa-header { background-color: var(--wa-header); color: white; padding: 10px 15px; display: flex; align-items: center; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        
+        #chat-container { flex-grow: 1; overflow-y: auto; padding: 15px; z-index: 5; display: flex; flex-direction: column; }
 
-        /* BACKGROUND PATTERN */
-        .chat-background {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            opacity: 0.4; z-index: 0; pointer-events: none;
-        }
-
-        /* HEADER */
-        .wa-header {
-            flex-shrink: 0; /* Gak boleh mengecil */
-            background-color: var(--wa-header);
-            color: white; padding: 10px 15px;
-            display: flex; align-items: center; z-index: 10;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #555; }
-
-        /* CHAT AREA (Scrollable) */
-        #chat-container {
-            flex-grow: 1; /* Mengisi sisa ruang */
-            overflow-y: auto;
-            padding: 15px; z-index: 5;
-            display: flex; flex-direction: column;
-        }
-
-        /* BUBBLE STYLES */
-        .message {
-            max-width: 80%; padding: 6px 9px 8px 9px; margin-bottom: 4px;
-            border-radius: 7.5px; position: relative; font-size: 14.2px;
-            color: #111; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-            cursor: pointer; /* Biar user tau bisa diklik */
-        }
+        .message { max-width: 80%; padding: 6px 9px 8px 9px; margin-bottom: 4px; border-radius: 7.5px; position: relative; font-size: 14.2px; color: #111; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); cursor: pointer; word-wrap: break-word; }
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
         .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; }
         
-        /* Deleted Message Style */
-        .message.deleted { font-style: italic; color: #777; background-color: #f0f0f0 !important; }
+        /* Media Styles */
+        .media-img, .media-video { width: 100%; border-radius: 5px; margin-bottom: 5px; display: block; }
+        .audio-player { width: 200px; margin: 5px 0; }
 
-        .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 11px; color: #667781; margin-top: -4px; float: right; margin-left: 10px; padding-top: 4px; }
+        .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 11px; color: #667781; margin-top: 2px; float: right; }
         .msg-tick { font-size: 14px; margin-left: 3px; color: #53bdeb; }
 
-        /* INPUT AREA (Fixed at bottom of flex container) */
-        .wa-input-area {
-            flex-shrink: 0; /* Gak boleh mengecil */
-            background-color: var(--wa-input-bg);
-            padding: 8px 6px;
-            display: flex; align-items: flex-end; z-index: 20;
-            min-height: 60px; /* Tinggi minimal */
-        }
-        .wa-input-field {
-            flex: 1; border-radius: 20px; border: none;
-            padding: 10px 15px; outline: none; font-size: 15px;
-            background: #fff; margin: 0 5px;
-            border: 1px solid #ddd; /* Tambah border dikit biar kelihatan */
-        }
+        /* Input Area */
+        .wa-input-area { flex-shrink: 0; background: #fff; padding: 5px 10px; display: flex; align-items: center; z-index: 20; min-height: 60px; }
+        .wa-input-field { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; outline: none; font-size: 15px; background: #fff; margin: 0 5px; }
         .btn-icon { background: transparent; border: none; font-size: 24px; color: #54656f; padding: 0 8px; }
-        .btn-send { background: #008069; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
-
-        /* EMOJI DRAWER */
-        #emoji-drawer {
-            height: 0; overflow: hidden; transition: height 0.3s;
-            background: #eee; z-index: 15; display: grid;
-            grid-template-columns: repeat(8, 1fr); padding: 0;
-            overflow-y: auto;
-        }
-        #emoji-drawer.open { height: 200px; padding: 10px; }
-        .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; border-radius: 5px; }
-        .emoji-btn:active { background: #ccc; }
-
-        /* MODAL DELETE (Simple CSS Modal) */
-        #delete-modal {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center;
-        }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
         
-        /* Landing Page */
+        /* Tombol Mic Special */
+        .btn-mic { background: #008069; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; display: flex; align-items: center; justify-content: center; margin-left: 5px; transition: 0.2s; }
+        .btn-mic.recording { background: #d32f2f; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Loading Overlay */
+        #loading-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
+        
         #landing-page { z-index: 50; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
+    <input type="file" id="file-input" hidden accept="image/*,video/*">
+
     <div id="app-frame">
         <div class="chat-background"></div>
 
+        <div id="loading-overlay">
+            <div class="spinner-border text-success mb-2"></div>
+            <span id="loading-text">Mengirim...</span>
+        </div>
+
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
-            <h4>Private Chat</h4>
-            <p class="text-muted small mb-4">Chatting aman, fitur lengkap.</p>
-            <button onclick="createRoom()" class="btn btn-success w-100 py-2 mb-3" style="background-color: #008069;">
-                <i class="bi bi-plus-circle-fill me-2"></i> Buat Chat Baru
-            </button>
+            <h4>WA Ultimate</h4>
+            <p class="text-muted small mb-4">Support Foto, Video & Voice Note</p>
+            <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
         </div>
 
         <div id="header-area" class="wa-header" style="display:none;">
-            <i class="bi bi-arrow-left me-2" style="font-size: 20px; cursor:pointer;" onclick="window.location.href=window.location.pathname"></i>
-            <div class="wa-avatar"><i class="bi bi-person-fill"></i></div>
-            <div style="flex:1; line-height: 1.2;">
-                <div style="font-weight: 600; font-size: 16px;">Aku & Kamu</div>
-                <div style="font-size: 12px; opacity: 0.8;" id="room-id-display">Online</div>
+            <i class="bi bi-arrow-left me-2" style="cursor:pointer;" onclick="window.location.reload()"></i>
+            <div style="width: 35px; height: 35px; background: #ddd; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin-right:10px;"><i class="bi bi-person-fill"></i></div>
+            <div style="flex:1;">
+                <div style="font-weight: 600;">Secret User</div>
+                <div style="font-size: 11px; opacity: 0.8;" id="room-id-display">Online</div>
             </div>
             <i class="bi bi-three-dots-vertical" onclick="copyLink()" style="cursor: pointer;"></i>
         </div>
@@ -155,22 +81,11 @@
 
         <div id="input-area-wrapper" style="display:none; flex-direction: column; z-index: 20;">
             <div class="wa-input-area">
-                <button class="btn-icon" onclick="toggleEmoji()"><i class="bi bi-emoji-smile"></i></button>
+                <button class="btn-icon" onclick="triggerFile()"><i class="bi bi-paperclip" style="transform: rotate(45deg);"></i></button>
                 <input type="text" id="message-input" class="wa-input-field" placeholder="Ketik pesan" autocomplete="off">
-                <button onclick="sendMessage()" class="btn-send"><i class="bi bi-send-fill" style="font-size: 18px;"></i></button>
-            </div>
-            <div id="emoji-drawer">
-                </div>
-        </div>
-    </div>
-
-    <div id="delete-modal">
-        <div class="modal-content text-center">
-            <h5>Hapus Pesan?</h5>
-            <p class="small text-muted">Pesan akan ditarik untuk semua orang.</p>
-            <div class="d-flex gap-2 justify-content-center mt-3">
-                <button class="btn btn-secondary btn-sm" onclick="closeModal()">Batal</button>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
+                <button id="btn-action" class="btn-mic" onclick="handleMicOrSend()">
+                    <i id="icon-action" class="bi bi-mic-fill"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -178,140 +93,183 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        // Tambah Storage SDK
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5o4FTyWTFIbdvpO2-vfN2_Mf750GtiXM",
             authDomain: "chatting-22bb9.firebaseapp.com",
             projectId: "chatting-22bb9",
-            storageBucket: "chatting-22bb9.firebasestorage.app",
+            storageBucket: "chatting-22bb9.firebasestorage.app", // Pastikan ini benar
             messagingSenderId: "540910795541",
-            appId: "1:540910795541:web:d0fdb25b2e2f928c36c71c",
-            measurementId: "G-DSFN1PR1WV"
+            appId: "1:540910795541:web:d0fdb25b2e2f928c36c71c"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        // --- VARIABLES ---
-        let myId = localStorage.getItem('wa_secret_id');
-        if (!myId) { myId = 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('wa_secret_id', myId); }
+        let myId = localStorage.getItem('wa_uid') || 'user_' + Math.random().toString(36).substr(2,9);
+        localStorage.setItem('wa_uid', myId);
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room');
-        let selectedMsgId = null;
+        const roomId = new URLSearchParams(window.location.search).get('room');
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
 
-        // --- INIT APP ---
+        // --- INIT ---
         if (roomId) {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('header-area').style.display = 'flex';
             document.getElementById('chat-container').style.display = 'flex';
             document.getElementById('input-area-wrapper').style.display = 'flex';
-            document.getElementById('room-id-display').innerText = "Tap titik 3 untuk salin link";
+            document.getElementById('room-id-display').innerText = "Room ID: " + roomId;
 
+            // Listen Chat
             const q = query(collection(db, "rooms", roomId, "messages"), orderBy("createdAt", "asc"));
-            
             onSnapshot(q, (snapshot) => {
-                const chatContainer = document.getElementById('chat-container');
-                chatContainer.innerHTML = '<div style="height: 10px; width:100%;"></div><div class="text-center my-3"><span style="background: #ffeecd; color: #555; font-size: 10px; padding: 5px 10px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1);">🔒 Pesan ini terenkripsi secara end-to-end.</span></div>'; 
+                const container = document.getElementById('chat-container');
+                container.innerHTML = '<div class="text-center my-3"><span style="background:#ffeecd; font-size:10px; padding:5px;">🔒 Pesan terenkripsi</span></div>';
                 
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
                     const isMe = data.senderId === myId;
-                    const msgId = docSnap.id;
+                    const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
                     
-                    let timeString = "...";
-                    if (data.createdAt) {
-                        timeString = data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false});
+                    let content = "";
+                    if(data.type === 'image') {
+                        content = `<img src="${data.fileUrl}" class="media-img" onclick="window.open(this.src)">`;
+                    } else if(data.type === 'video') {
+                        content = `<video src="${data.fileUrl}" controls class="media-video"></video>`;
+                    } else if(data.type === 'audio') {
+                        content = `<audio src="${data.fileUrl}" controls class="audio-player"></audio>`;
+                    } else {
+                        content = data.text;
                     }
 
                     const div = document.createElement('div');
-                    
-                    // Logic Tampilan Pesan Dihapus
-                    if (data.deleted) {
-                        div.className = `message ${isMe ? 'me' : 'them'} deleted`;
-                        div.innerHTML = `<i class="bi bi-slash-circle me-1"></i> Pesan ini telah dihapus <small class="d-block text-end mt-1" style="font-size:9px;">${timeString}</small>`;
-                    } else {
-                        div.className = `message ${isMe ? 'me' : 'them'}`;
-                        const tickIcon = isMe ? '<i class="bi bi-check-all msg-tick"></i>' : '';
-                        div.innerHTML = `${data.text} <div class="msg-meta">${timeString} ${tickIcon}</div>`;
-                        
-                        // Klik pesan untuk opsi Hapus
-                        if (isMe) {
-                            div.onclick = () => openDeleteModal(msgId);
-                        }
-                    }
-                    chatContainer.appendChild(div);
+                    div.className = `message ${isMe ? 'me' : 'them'}`;
+                    div.innerHTML = `${content} <div class="msg-meta">${time} ${isMe ? '<i class="bi bi-check-all msg-tick"></i>' : ''}</div>`;
+                    container.appendChild(div);
                 });
-
-                // Auto scroll smart (hanya jika user ada di bawah)
-                setTimeout(() => { chatContainer.scrollTop = chatContainer.scrollHeight; }, 100);
+                setTimeout(()=> container.scrollTop = container.scrollHeight, 100);
             });
         }
 
-        // --- FUNCTIONS ---
+        // --- INPUT HANDLER ---
+        const inputField = document.getElementById('message-input');
+        const btnAction = document.getElementById('btn-action');
+        const iconAction = document.getElementById('icon-action');
 
-        // 1. Kirim Pesan
-        window.sendMessage = async () => {
-            const input = document.getElementById('message-input');
-            const text = input.value.trim();
-            document.getElementById('emoji-drawer').classList.remove('open'); // Tutup emoji pas kirim
-
-            if (text && roomId) {
-                input.value = ""; input.focus();
-                await addDoc(collection(db, "rooms", roomId, "messages"), {
-                    text: text, senderId: myId, createdAt: serverTimestamp(), deleted: false
-                });
+        // Ubah icon Mic <-> Send
+        inputField.addEventListener('input', () => {
+            if(inputField.value.trim().length > 0) {
+                iconAction.className = "bi bi-send-fill";
+                btnAction.className = "btn-mic"; // Normal
+            } else {
+                iconAction.className = "bi bi-mic-fill";
+                btnAction.className = isRecording ? "btn-mic recording" : "btn-mic";
             }
-        };
-
-        // Enter untuk kirim
-        document.getElementById('message-input').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") window.sendMessage();
         });
 
-        // 2. Hapus Pesan
-        window.openDeleteModal = (id) => {
-            selectedMsgId = id;
-            document.getElementById('delete-modal').style.display = 'flex';
-        };
-
-        window.closeModal = () => {
-            document.getElementById('delete-modal').style.display = 'none';
-            selectedMsgId = null;
-        };
-
-        window.confirmDelete = async () => {
-            if (selectedMsgId && roomId) {
-                const msgRef = doc(db, "rooms", roomId, "messages", selectedMsgId);
-                // Kita tidak menghapus dokumen, tapi mengupdate statusnya jadi 'deleted'
-                // Supaya di HP teman juga berubah jadi "Pesan dihapus"
-                await updateDoc(msgRef, { deleted: true, text: "" });
-                closeModal();
+        window.handleMicOrSend = () => {
+            if(inputField.value.trim().length > 0) {
+                sendMessage(inputField.value, 'text');
+            } else {
+                toggleRecording();
             }
-        };
+        }
 
-        // 3. Emoji Logic
-        const emojis = ["😀","😂","🤣","😍","🥰","😎","😭","😡","👍","👎","🙏","🤝","👋","❤️","💔","🔥","✨","🎉","👀","💩"];
-        const drawer = document.getElementById('emoji-drawer');
-        
-        // Render Emoji ke Drawer
-        emojis.forEach(e => {
-            const s = document.createElement('span');
-            s.className = 'emoji-btn'; s.innerText = e;
-            s.onclick = () => {
-                const input = document.getElementById('message-input');
-                input.value += e; input.focus();
-            };
-            drawer.appendChild(s);
+        // --- SEND MESSAGE LOGIC ---
+        async function sendMessage(content, type, fileUrl = null) {
+            if(!roomId) return;
+            
+            inputField.value = "";
+            iconAction.className = "bi bi-mic-fill"; // Reset icon
+
+            await addDoc(collection(db, "rooms", roomId, "messages"), {
+                text: type === 'text' ? content : '', 
+                fileUrl: fileUrl,
+                type: type, // 'text', 'image', 'video', 'audio'
+                senderId: myId,
+                createdAt: serverTimestamp()
+            });
+        }
+
+        // --- FILE UPLOAD (IMAGE/VIDEO) ---
+        window.triggerFile = () => document.getElementById('file-input').click();
+
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            // Show Loading
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            try {
+                // Upload to Firebase Storage
+                const storageRef = ref(storage, `uploads/${roomId}/${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+
+                // Tentukan tipe
+                const type = file.type.startsWith('image') ? 'image' : 'video';
+                await sendMessage("", type, url);
+            } catch(err) {
+                alert("Gagal upload: " + err.message);
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
         });
 
-        window.toggleEmoji = () => {
-            drawer.classList.toggle('open');
-        };
+        // --- VOICE NOTE LOGIC ---
+        async function toggleRecording() {
+            if(!isRecording) {
+                // Start Recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        uploadVoiceNote(audioBlob);
+                    };
 
-        // 4. Utilitas Lain
-        window.createRoom = () => { window.location.search = `?room=${Math.random().toString(36).substring(2, 10)}`; };
-        window.copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Link Room disalin!"); };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btnAction.classList.add('recording'); // Efek kedip merah
+                } catch(err) {
+                    alert("Izin mikrofon ditolak atau tidak didukung browser ini.");
+                }
+            } else {
+                // Stop Recording
+                mediaRecorder.stop();
+                isRecording = false;
+                btnAction.classList.remove('recording');
+            }
+        }
+
+        async function uploadVoiceNote(blob) {
+            document.getElementById('loading-text').innerText = "Mengirim VN...";
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            try {
+                const storageRef = ref(storage, `voice_notes/${roomId}/${Date.now()}.webm`);
+                const snapshot = await uploadBytes(storageRef, blob);
+                const url = await getDownloadURL(snapshot.ref);
+                await sendMessage("", 'audio', url);
+            } catch(err) {
+                console.error(err);
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('loading-text').innerText = "Mengirim...";
+            }
+        }
+
+        window.createRoom = () => window.location.search = `?room=${Math.random().toString(36).substr(2,9)}`;
+        window.copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Link tersalin!"); }
     </script>
 </body>
 </html>
