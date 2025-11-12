@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WA Private (Full Features)</title>
+    <title>WA Instant Call</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -19,23 +19,20 @@
 
         .chat-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.4; z-index: 0; pointer-events: none; }
 
-        /* HEADER */
         .wa-header { background-color: var(--wa-header); color: white; padding: 10px 15px; display: flex; align-items: center; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #cfd8dc; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; overflow: hidden; }
         .header-actions i { font-size: 20px; margin-left: 18px; cursor: pointer; }
 
-        /* CHAT AREA */
         #chat-container { flex-grow: 1; overflow-y: auto; padding: 15px; z-index: 5; display: flex; flex-direction: column; }
         .message { max-width: 80%; padding: 6px 9px 8px 9px; margin-bottom: 4px; border-radius: 7.5px; position: relative; font-size: 14.2px; color: #111; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); word-wrap: break-word; }
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
         .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; }
         .message.deleted { font-style: italic; color: #777; background-color: #f0f0f0 !important; }
 
-        /* Call Notification Bubble */
+        /* Call Bubble */
         .call-card { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 10px; border-radius: 5px; text-align: center; cursor: pointer; }
         .btn-join-call { background: #008069; color: white; border: none; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 5px; width: 100%; }
 
-        /* Image & Input */
         .media-img { width: 100%; border-radius: 5px; margin-bottom: 5px; display: block; cursor: zoom-in; }
         .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 11px; color: #667781; margin-top: 2px; float: right; }
         .msg-tick { font-size: 14px; margin-left: 3px; color: #53bdeb; }
@@ -45,23 +42,21 @@
         .btn-icon { background: transparent; border: none; font-size: 24px; color: #54656f; padding: 0 8px; }
         .btn-send { background: #008069; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
 
-        /* Emoji Drawer */
         #emoji-drawer { height: 0; overflow: hidden; transition: height 0.3s; background: #eee; z-index: 15; display: grid; grid-template-columns: repeat(8, 1fr); padding: 0; overflow-y: auto; }
         #emoji-drawer.open { height: 200px; padding: 10px; }
         .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
 
-        /* OVERLAYS (IMAGE & CALL) */
+        /* OVERLAYS */
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* Image Viewer Specific */
         #viewer-img { max-width: 100%; max-height: 80%; transition: transform 0.2s; }
         .viewer-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; }
         .ctrl-btn { color: white; font-size: 24px; cursor: pointer; background: none; border: none; }
         .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; z-index: 10001; }
 
-        /* Call Overlay Specific */
+        /* Jitsi Container */
         #jitsi-container { width: 100%; height: 100%; }
-        .close-call-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: red; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 18px; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .close-call-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); background: red; color: white; border: none; padding: 12px 25px; border-radius: 50px; font-weight: bold; font-size: 16px; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 8px; }
 
         #delete-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
@@ -85,7 +80,9 @@
 
     <div id="call-overlay" class="full-overlay">
         <div id="jitsi-container"></div> 
-        <button class="close-call-btn" onclick="endEmbeddedCall()"><i class="bi bi-telephone-x-fill"></i> Tutup Telepon</button>
+        <button class="close-call-btn" onclick="endEmbeddedCall()">
+            <i class="bi bi-telephone-x-fill"></i> Matikan
+        </button>
     </div>
 
     <div id="app-frame">
@@ -93,8 +90,8 @@
 
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
-            <h4>WA Ultimate</h4>
-            <p class="text-muted small mb-4">Chat • Foto • Video Call (In-App)</p>
+            <h4>Private WA</h4>
+            <p class="text-muted small mb-4">Instant Connect (No Waiting Room)</p>
             <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
         </div>
 
@@ -106,8 +103,8 @@
                 <div style="font-size: 11px; opacity: 0.8;" id="room-id-display">Online</div>
             </div>
             <div class="header-actions">
-                <i class="bi bi-camera-video-fill" onclick="notifyCall('Video')"></i>
-                <i class="bi bi-telephone-fill" onclick="notifyCall('Suara')"></i>
+                <i class="bi bi-camera-video-fill" onclick="notifyCall('video')"></i>
+                <i class="bi bi-telephone-fill" onclick="notifyCall('voice')"></i>
                 <i class="bi bi-three-dots-vertical" onclick="copyLink()"></i>
             </div>
         </div>
@@ -156,7 +153,7 @@
         localStorage.setItem('wa_uid', myId);
         const roomId = new URLSearchParams(window.location.search).get('room');
         let selectedMsgId = null;
-        let jitsiApi = null; // Untuk simpan sesi telepon
+        let jitsiApi = null;
 
         // --- APP LOGIC ---
         if (roomId) {
@@ -184,21 +181,21 @@
                     } else {
                         div.className = `message ${isMe ? 'me' : 'them'}`;
                         
-                        // RENDER TIPE PESAN
                         if (data.type === 'call_notify') {
-                            // BUBBLE NOTIFIKASI PANGGILAN
+                            // LOGIC TOMBOL GABUNG
+                            // Kita simpan data type call nya di atribut data-type biar bisa dibaca pas diklik
                             div.innerHTML = `
-                                <div class="call-card" onclick="joinEmbeddedCall()">
+                                <div class="call-card" onclick="joinEmbeddedCall('${data.text}')">
                                     <div style="font-weight:bold; margin-bottom:5px;">
-                                        <i class="bi bi-camera-video-fill text-success"></i> Panggilan ${data.text}
+                                        <i class="bi ${data.text === 'video' ? 'bi-camera-video-fill' : 'bi-telephone-fill'} text-success"></i> 
+                                        Panggilan ${data.text === 'video' ? 'Video' : 'Suara'}
                                     </div>
-                                    <small class="text-muted">Klik untuk bergabung sekarang</small>
-                                    <button class="btn-join-call">📞 GABUNG / ANGKAT</button>
+                                    <small class="text-muted">Klik untuk langsung tersambung</small>
+                                    <button class="btn-join-call">📞 ANGKAT SEKARANG</button>
                                 </div>
                                 <div class="msg-meta">${time}</div>
                             `;
                         } else {
-                            // CHAT BIASA / GAMBAR
                             let content = data.text;
                             if (data.image64) content = `<img src="${data.image64}" class="media-img" id="img-${msgId}"> ${data.text}`;
                             div.innerHTML = `${content} <div class="msg-meta">${time} ${isMe ? '<i class="bi bi-check-all msg-tick"></i>' : ''}</div>`;
@@ -220,88 +217,76 @@
             });
         }
 
-        // --- JITSI EMBEDDED LOGIC (CORE UPDATE) ---
-        window.notifyCall = async (label) => {
-            const c = confirm(`Mulai Panggilan ${label}?`);
+        // --- INSTANT JITSI LOGIC ---
+        window.notifyCall = async (type) => {
+            const c = confirm(`Mulai Panggilan ${type}?`);
             if(c) {
-                // 1. Kirim notifikasi ke chat biar lawan bicara tau
                 await addDoc(collection(db, "rooms", roomId, "messages"), {
-                    text: label,
+                    text: type, // 'video' atau 'voice'
                     type: 'call_notify',
                     senderId: myId,
                     createdAt: serverTimestamp(),
                     deleted: false
                 });
-                // 2. Langsung buka layar telepon di kita sendiri
-                joinEmbeddedCall();
+                joinEmbeddedCall(type);
             }
         };
 
-        window.joinEmbeddedCall = () => {
+        // Fungsi ini yang bikin Instant Connect
+        window.joinEmbeddedCall = (callType) => {
             const domain = "meet.jit.si";
+            
+            // Config supaya tidak ada Prejoin Page
+            const configOverwrite = {
+                startWithAudioMuted: false,
+                startWithVideoMuted: callType === 'voice', // Kalau Voice Call, Video otomatis Mati
+                prejoinPageEnabled: false, // INI KUNCINYA: Matikan halaman persiapan
+                skipMeetingPrejoin: true, // INI JUGA PENTING
+                disableDeepLinking: true // Biar gak maksa buka app di HP
+            };
+
             const options = {
-                roomName: "SecretChat-" + roomId, // Nama room unik sesuai ID Chat
+                roomName: "SecretChat-" + roomId,
                 width: "100%",
                 height: "100%",
                 parentNode: document.querySelector('#jitsi-container'),
-                configOverwrite: { 
-                    startWithAudioMuted: false, 
-                    startWithVideoMuted: false 
-                },
+                configOverwrite: configOverwrite,
                 interfaceConfigOverwrite: { 
-                    // Sembunyikan elemen2 yang bikin keliatan kayak "Meeting"
-                    TOOLBAR_BUTTONS: [
-                        'microphone', 'camera', 'hangup', 'tileview', 'fullscreen'
-                    ],
+                    TOOLBAR_BUTTONS: ['microphone', 'camera', 'hangup', 'tileview', 'fullscreen'],
                     SHOW_JITSI_WATERMARK: false,
+                    MOBILE_APP_PROMO: false // Matikan iklan app
                 },
                 userInfo: {
-                    displayName: "Secret User" // Biar gak ditanya nama lagi (Login Bypass)
+                    displayName: "Secret User" 
                 }
             };
 
-            // Tampilkan Overlay
             document.getElementById('call-overlay').style.display = 'flex';
-            
-            // Inisialisasi Jitsi
             jitsiApi = new JitsiMeetExternalAPI(domain, options);
             
-            // Kalau user mematikan lewat tombol merah di UI Jitsi
             jitsiApi.addEventListeners({
-                videoConferenceLeft: function () {
-                    endEmbeddedCall();
-                }
+                videoConferenceLeft: function () { endEmbeddedCall(); }
             });
         };
 
         window.endEmbeddedCall = () => {
-            if(jitsiApi) {
-                jitsiApi.dispose(); // Hancurkan frame video
-                jitsiApi = null;
-            }
+            if(jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
             document.getElementById('call-overlay').style.display = 'none';
         };
 
-        // --- SEND LOGIC ---
+        // --- SEND & IMAGE ---
         window.sendMessage = async (imgBase64 = null) => {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             document.getElementById('emoji-drawer').classList.remove('open');
-
             if ((text || imgBase64) && roomId) {
                 input.value = "";
                 await addDoc(collection(db, "rooms", roomId, "messages"), {
-                    text: text,
-                    image64: imgBase64,
-                    type: 'chat',
-                    senderId: myId,
-                    createdAt: serverTimestamp(),
-                    deleted: false
+                    text: text, image64: imgBase64, type: 'chat', senderId: myId, createdAt: serverTimestamp(), deleted: false
                 });
             }
         };
 
-        // --- IMAGE COMPRESSOR ---
         window.triggerFile = () => document.getElementById('file-input').click();
         document.getElementById('file-input').addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -325,14 +310,13 @@
             }
         });
 
-        // --- IMAGE VIEWER ---
+        // --- VIEWER & UTILS ---
         let currentScale = 1;
         window.openViewer = (src) => {
             const viewer = document.getElementById('image-viewer');
             const img = document.getElementById('viewer-img');
-            const downloadBtn = document.getElementById('download-link');
-            img.src = src; downloadBtn.href = src; 
-            currentScale = 1; img.style.transform = `scale(${currentScale})`;
+            document.getElementById('download-link').href = src; 
+            img.src = src; currentScale = 1; img.style.transform = `scale(${currentScale})`;
             viewer.style.display = 'flex';
         };
         window.closeViewer = () => { document.getElementById('image-viewer').style.display = 'none'; };
@@ -340,14 +324,10 @@
         window.zoomOut = () => { if(currentScale > 0.5) currentScale -= 0.2; document.getElementById('viewer-img').style.transform = `scale(${currentScale})`; };
         window.resetZoom = () => { currentScale = 1; document.getElementById('viewer-img').style.transform = `scale(${currentScale})`; };
 
-        // --- UTILS ---
         document.getElementById('message-input').addEventListener("keypress", (e) => { if (e.key === "Enter") window.sendMessage(); });
         window.openDeleteModal = (id) => { selectedMsgId = id; document.getElementById('delete-modal').style.display = 'flex'; };
         window.closeModal = () => { document.getElementById('delete-modal').style.display = 'none'; selectedMsgId = null; };
-        window.confirmDelete = async () => {
-            if (selectedMsgId) await updateDoc(doc(db, "rooms", roomId, "messages", selectedMsgId), { deleted: true, text: "", image64: null });
-            closeModal();
-        };
+        window.confirmDelete = async () => { if (selectedMsgId) await updateDoc(doc(db, "rooms", roomId, "messages", selectedMsgId), { deleted: true, text: "", image64: null }); closeModal(); };
 
         const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍"];
         const drawer = document.getElementById('emoji-drawer');
