@@ -5,143 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WhatsApp Private</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
         :root {
-            --wa-header: #00a884;
+            --wa-header: #008069;
             --wa-bg: #efeae2;
             --wa-bubble-me: #d9fdd3;
             --wa-bubble-them: #ffffff;
-            --wa-input-bg: #f0f2f5;
+            --wa-input-bg: #ffffff;
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            background-color: #d1d7db; /* Warna latar desktop */
+            background-color: #d1d7db;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            height: 100vh;
+            margin: 0;
+            padding: 0;
+            /* PENTING: 100dvh menyesuaikan tinggi browser HP termasuk address bar */
+            height: 100dvh; 
+            width: 100vw;
+            overflow: hidden; 
             display: flex;
             justify-content: center;
-            overflow: hidden;
-            margin: 0;
         }
 
-        /* Container Utama (Simulasi Layar HP di Desktop) */
+        /* FRAME UTAMA (Mobile Friendly) */
         #app-frame {
             width: 100%;
-            max-width: 100%; /* Full di HP */
             height: 100%;
             background-color: var(--wa-bg);
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Susunan: Header -> Chat -> Input */
             position: relative;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
         @media (min-width: 768px) {
-            #app-frame { max-width: 500px; } /* Di laptop jadi kayak HP */
+            #app-frame { max-width: 450px; height: 95dvh; margin-top: 2.5vh; border-radius: 0; } 
+            body { align-items: center; }
         }
 
-        /* BACKGROUND PATTERN (Doodle) */
+        /* BACKGROUND PATTERN */
         .chat-background {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            opacity: 0.4;
-            z-index: 0;
+            opacity: 0.4; z-index: 0; pointer-events: none;
         }
 
         /* HEADER */
         .wa-header {
+            flex-shrink: 0; /* Gak boleh mengecil */
             background-color: var(--wa-header);
-            color: white;
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-            z-index: 10;
+            color: white; padding: 10px 15px;
+            display: flex; align-items: center; z-index: 10;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-        .wa-avatar {
-            width: 40px; height: 40px; border-radius: 50%; background: #ddd; margin-right: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 20px; color: #555;
-        }
+        .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #555; }
 
-        /* CHAT AREA */
+        /* CHAT AREA (Scrollable) */
         #chat-container {
-            flex: 1;
+            flex-grow: 1; /* Mengisi sisa ruang */
             overflow-y: auto;
-            padding: 15px;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            scroll-behavior: auto; /* Biar instant pas load */
+            padding: 15px; z-index: 5;
+            display: flex; flex-direction: column;
         }
 
-        /* BUBBLE CHAT STYLE */
+        /* BUBBLE STYLES */
         .message {
-            max-width: 75%;
-            padding: 6px 7px 8px 9px;
-            margin-bottom: 4px;
-            border-radius: 7.5px;
-            position: relative;
-            font-size: 14.2px;
-            line-height: 19px;
-            color: #111;
-            box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+            max-width: 80%; padding: 6px 9px 8px 9px; margin-bottom: 4px;
+            border-radius: 7.5px; position: relative; font-size: 14.2px;
+            color: #111; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+            cursor: pointer; /* Biar user tau bisa diklik */
         }
+        .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
+        .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; }
         
-        .message.me {
-            background-color: var(--wa-bubble-me);
-            align-self: flex-end;
-            border-top-right-radius: 0;
-        }
+        /* Deleted Message Style */
+        .message.deleted { font-style: italic; color: #777; background-color: #f0f0f0 !important; }
 
-        .message.them {
-            background-color: var(--wa-bubble-them);
-            align-self: flex-start;
-            border-top-left-radius: 0;
-        }
+        .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 11px; color: #667781; margin-top: -4px; float: right; margin-left: 10px; padding-top: 4px; }
+        .msg-tick { font-size: 14px; margin-left: 3px; color: #53bdeb; }
 
-        /* Jam & Centang */
-        .msg-meta {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            font-size: 11px;
-            color: #667781;
-            margin-top: -4px; /* Geser dikit ke atas biar rapet */
-            float: right;
-            margin-left: 10px;
-            padding-top: 4px;
-        }
-        .msg-tick { font-size: 14px; margin-left: 3px; color: #53bdeb; } /* Warna biru centang */
-
-        /* INPUT AREA */
+        /* INPUT AREA (Fixed at bottom of flex container) */
         .wa-input-area {
+            flex-shrink: 0; /* Gak boleh mengecil */
             background-color: var(--wa-input-bg);
-            padding: 8px 10px;
-            display: flex;
-            align-items: center;
-            z-index: 10;
+            padding: 8px 6px;
+            display: flex; align-items: flex-end; z-index: 20;
+            min-height: 60px; /* Tinggi minimal */
         }
         .wa-input-field {
-            flex: 1;
-            border-radius: 8px;
-            border: none;
-            padding: 9px 12px;
-            outline: none;
-            font-size: 15px;
+            flex: 1; border-radius: 20px; border: none;
+            padding: 10px 15px; outline: none; font-size: 15px;
+            background: #fff; margin: 0 5px;
+            border: 1px solid #ddd; /* Tambah border dikit biar kelihatan */
         }
-        .btn-send {
-            background: transparent; border: none; font-size: 24px; color: var(--wa-header); margin-left: 10px;
-        }
+        .btn-icon { background: transparent; border: none; font-size: 24px; color: #54656f; padding: 0 8px; }
+        .btn-send { background: #008069; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
 
-        /* LANDING PAGE */
-        #landing-page {
-            z-index: 20; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; text-align: center;
+        /* EMOJI DRAWER */
+        #emoji-drawer {
+            height: 0; overflow: hidden; transition: height 0.3s;
+            background: #eee; z-index: 15; display: grid;
+            grid-template-columns: repeat(8, 1fr); padding: 0;
+            overflow-y: auto;
         }
+        #emoji-drawer.open { height: 200px; padding: 10px; }
+        .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; border-radius: 5px; }
+        .emoji-btn:active { background: #ccc; }
+
+        /* MODAL DELETE (Simple CSS Modal) */
+        #delete-modal {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center;
+        }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
+        
+        /* Landing Page */
+        #landing-page { z-index: 50; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
     </style>
 </head>
 <body>
@@ -152,56 +135,50 @@
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
             <h4>Private Chat</h4>
-            <p class="text-muted small mb-4">Enkripsi End-to-End (Canda, ini Firebase 😜)</p>
-            
-            <button onclick="createRoom()" class="btn btn-success w-100 py-2 mb-3" style="background-color: #00a884; border:none;">
-                <i class="bi bi-plus-circle-fill me-2"></i> Buat Link Chat Baru
+            <p class="text-muted small mb-4">Chatting aman, fitur lengkap.</p>
+            <button onclick="createRoom()" class="btn btn-success w-100 py-2 mb-3" style="background-color: #008069;">
+                <i class="bi bi-plus-circle-fill me-2"></i> Buat Chat Baru
             </button>
-            
-            <div class="card p-3 bg-light border-0 w-100">
-                <small class="text-muted text-start">Cara pakai:</small>
-                <ol class="small text-muted text-start ps-3 mb-0">
-                    <li>Klik tombol di atas</li>
-                    <li>Salin Link yang muncul</li>
-                    <li>Kirim ke temanmu</li>
-                </ol>
-            </div>
         </div>
 
         <div id="header-area" class="wa-header" style="display:none;">
             <i class="bi bi-arrow-left me-2" style="font-size: 20px; cursor:pointer;" onclick="window.location.href=window.location.pathname"></i>
-            <div class="wa-avatar">
-                <i class="bi bi-person-fill"></i>
-            </div>
+            <div class="wa-avatar"><i class="bi bi-person-fill"></i></div>
             <div style="flex:1; line-height: 1.2;">
-                <div style="font-weight: 600; font-size: 16px;">Secret User</div>
+                <div style="font-weight: 600; font-size: 16px;">Aku & Kamu</div>
                 <div style="font-size: 12px; opacity: 0.8;" id="room-id-display">Online</div>
             </div>
-            <div class="d-flex gap-3">
-                <i class="bi bi-camera-video-fill" style="opacity: 0.8;"></i>
-                <i class="bi bi-telephone-fill" style="opacity: 0.8;"></i>
-                <i class="bi bi-three-dots-vertical" onclick="copyLink()" style="cursor: pointer;"></i>
-            </div>
+            <i class="bi bi-three-dots-vertical" onclick="copyLink()" style="cursor: pointer;"></i>
         </div>
 
-        <div id="chat-container" style="display:none;">
-            </div>
+        <div id="chat-container" style="display:none;"></div>
 
-        <div id="input-area" class="wa-input-area" style="display:none;">
-            <i class="bi bi-emoji-smile text-secondary me-2" style="font-size: 24px;"></i>
-            <i class="bi bi-paperclip text-secondary me-2" style="font-size: 24px; transform: rotate(45deg);"></i>
-            <input type="text" id="message-input" class="wa-input-field" placeholder="Ketik pesan" autocomplete="off">
-            <button onclick="sendMessage()" class="btn-send">
-                <i class="bi bi-send-fill"></i>
-            </button>
+        <div id="input-area-wrapper" style="display:none; flex-direction: column; z-index: 20;">
+            <div class="wa-input-area">
+                <button class="btn-icon" onclick="toggleEmoji()"><i class="bi bi-emoji-smile"></i></button>
+                <input type="text" id="message-input" class="wa-input-field" placeholder="Ketik pesan" autocomplete="off">
+                <button onclick="sendMessage()" class="btn-send"><i class="bi bi-send-fill" style="font-size: 18px;"></i></button>
+            </div>
+            <div id="emoji-drawer">
+                </div>
+        </div>
+    </div>
+
+    <div id="delete-modal">
+        <div class="modal-content text-center">
+            <h5>Hapus Pesan?</h5>
+            <p class="small text-muted">Pesan akan ditarik untuk semua orang.</p>
+            <div class="d-flex gap-2 justify-content-center mt-3">
+                <button class="btn btn-secondary btn-sm" onclick="closeModal()">Batal</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-        // CONFIG FIREBASE KAMU
         const firebaseConfig = {
             apiKey: "AIzaSyB5o4FTyWTFIbdvpO2-vfN2_Mf750GtiXM",
             authDomain: "chatting-22bb9.firebaseapp.com",
@@ -215,109 +192,126 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ID USER (Disimpan di browser biar konsisten)
+        // --- VARIABLES ---
         let myId = localStorage.getItem('wa_secret_id');
-        if (!myId) {
-            myId = 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('wa_secret_id', myId);
-        }
-
-        // CEK URL
+        if (!myId) { myId = 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('wa_secret_id', myId); }
+        
         const urlParams = new URLSearchParams(window.location.search);
         const roomId = urlParams.get('room');
+        let selectedMsgId = null;
 
+        // --- INIT APP ---
         if (roomId) {
-            // Jika ada Room, Tampilkan Chat UI
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('header-area').style.display = 'flex';
             document.getElementById('chat-container').style.display = 'flex';
-            document.getElementById('input-area').style.display = 'flex';
-            
-            // Ubah status jadi Kode Room (biar tau)
+            document.getElementById('input-area-wrapper').style.display = 'flex';
             document.getElementById('room-id-display').innerText = "Tap titik 3 untuk salin link";
 
-            // LOAD CHAT
             const q = query(collection(db, "rooms", roomId, "messages"), orderBy("createdAt", "asc"));
             
             onSnapshot(q, (snapshot) => {
                 const chatContainer = document.getElementById('chat-container');
-                chatContainer.innerHTML = ""; 
+                chatContainer.innerHTML = '<div style="height: 10px; width:100%;"></div><div class="text-center my-3"><span style="background: #ffeecd; color: #555; font-size: 10px; padding: 5px 10px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1);">🔒 Pesan ini terenkripsi secara end-to-end.</span></div>'; 
                 
-                // Spacer atas biar chat gak ketutup header
-                chatContainer.innerHTML += '<div style="height: 10px; width:100%;"></div>'; 
-
-                // Bubble enkripsi palsu biar mirip WA
-                const encryptionNote = `
-                    <div class="text-center my-3">
-                        <span style="background: #ffeecd; color: #555; font-size: 10px; padding: 5px 10px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1);">
-                            🔒 Pesan ini terenkripsi secara end-to-end.
-                        </span>
-                    </div>`;
-                chatContainer.innerHTML += encryptionNote;
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
                     const isMe = data.senderId === myId;
+                    const msgId = docSnap.id;
                     
-                    // Format Jam (Contoh: 10:45)
                     let timeString = "...";
                     if (data.createdAt) {
-                        const date = data.createdAt.toDate();
-                        timeString = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false});
+                        timeString = data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false});
                     }
 
                     const div = document.createElement('div');
-                    div.className = `message ${isMe ? 'me' : 'them'}`;
                     
-                    // Centang biru (hanya untuk 'me')
-                    const tickIcon = isMe ? '<i class="bi bi-check-all msg-tick"></i>' : '';
-
-                    div.innerHTML = `
-                        ${data.text}
-                        <div class="msg-meta">
-                            ${timeString} ${tickIcon}
-                        </div>
-                    `;
-                    
+                    // Logic Tampilan Pesan Dihapus
+                    if (data.deleted) {
+                        div.className = `message ${isMe ? 'me' : 'them'} deleted`;
+                        div.innerHTML = `<i class="bi bi-slash-circle me-1"></i> Pesan ini telah dihapus <small class="d-block text-end mt-1" style="font-size:9px;">${timeString}</small>`;
+                    } else {
+                        div.className = `message ${isMe ? 'me' : 'them'}`;
+                        const tickIcon = isMe ? '<i class="bi bi-check-all msg-tick"></i>' : '';
+                        div.innerHTML = `${data.text} <div class="msg-meta">${timeString} ${tickIcon}</div>`;
+                        
+                        // Klik pesan untuk opsi Hapus
+                        if (isMe) {
+                            div.onclick = () => openDeleteModal(msgId);
+                        }
+                    }
                     chatContainer.appendChild(div);
                 });
 
-                // Scroll ke bawah
-                setTimeout(() => {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }, 100);
+                // Auto scroll smart (hanya jika user ada di bawah)
+                setTimeout(() => { chatContainer.scrollTop = chatContainer.scrollHeight; }, 100);
             });
         }
 
-        // KIRIM PESAN
+        // --- FUNCTIONS ---
+
+        // 1. Kirim Pesan
         window.sendMessage = async () => {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
-            
+            document.getElementById('emoji-drawer').classList.remove('open'); // Tutup emoji pas kirim
+
             if (text && roomId) {
-                input.value = "";
-                input.focus();
+                input.value = ""; input.focus();
                 await addDoc(collection(db, "rooms", roomId, "messages"), {
-                    text: text,
-                    senderId: myId,
-                    createdAt: serverTimestamp()
+                    text: text, senderId: myId, createdAt: serverTimestamp(), deleted: false
                 });
             }
         };
 
-        document.getElementById('message-input').addEventListener("keypress", function(event) {
-            if (event.key === "Enter") window.sendMessage();
+        // Enter untuk kirim
+        document.getElementById('message-input').addEventListener("keypress", (e) => {
+            if (e.key === "Enter") window.sendMessage();
         });
 
-        window.createRoom = () => {
-            const newId = Math.random().toString(36).substring(2, 10);
-            window.location.search = `?room=${newId}`;
+        // 2. Hapus Pesan
+        window.openDeleteModal = (id) => {
+            selectedMsgId = id;
+            document.getElementById('delete-modal').style.display = 'flex';
         };
 
-        window.copyLink = () => {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Link Room disalin! 🔗");
+        window.closeModal = () => {
+            document.getElementById('delete-modal').style.display = 'none';
+            selectedMsgId = null;
         };
+
+        window.confirmDelete = async () => {
+            if (selectedMsgId && roomId) {
+                const msgRef = doc(db, "rooms", roomId, "messages", selectedMsgId);
+                // Kita tidak menghapus dokumen, tapi mengupdate statusnya jadi 'deleted'
+                // Supaya di HP teman juga berubah jadi "Pesan dihapus"
+                await updateDoc(msgRef, { deleted: true, text: "" });
+                closeModal();
+            }
+        };
+
+        // 3. Emoji Logic
+        const emojis = ["😀","😂","🤣","😍","🥰","😎","😭","😡","👍","👎","🙏","🤝","👋","❤️","💔","🔥","✨","🎉","👀","💩"];
+        const drawer = document.getElementById('emoji-drawer');
+        
+        // Render Emoji ke Drawer
+        emojis.forEach(e => {
+            const s = document.createElement('span');
+            s.className = 'emoji-btn'; s.innerText = e;
+            s.onclick = () => {
+                const input = document.getElementById('message-input');
+                input.value += e; input.focus();
+            };
+            drawer.appendChild(s);
+        });
+
+        window.toggleEmoji = () => {
+            drawer.classList.toggle('open');
+        };
+
+        // 4. Utilitas Lain
+        window.createRoom = () => { window.location.search = `?room=${Math.random().toString(36).substring(2, 10)}`; };
+        window.copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Link Room disalin!"); };
     </script>
 </body>
 </html>
