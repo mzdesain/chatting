@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat Private</title>
+    <title>WA Super Lengkap</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -20,6 +20,10 @@
         /* HEADER STYLE */
         .wa-header { background-color: var(--wa-header); color: white; padding: 10px 15px; display: flex; align-items: center; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #cfd8dc; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; overflow: hidden; }
+        
+        /* Header Action Icons */
+        .header-actions i { font-size: 20px; margin-left: 20px; cursor: pointer; }
+        .header-actions i:active { opacity: 0.7; }
 
         #chat-container { flex-grow: 1; overflow-y: auto; padding: 15px; z-index: 5; display: flex; flex-direction: column; }
 
@@ -27,6 +31,10 @@
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
         .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; }
         .message.deleted { font-style: italic; color: #777; background-color: #f0f0f0 !important; }
+
+        /* CALL BUBBLE STYLE */
+        .call-card { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 10px; border-radius: 5px; text-align: center; }
+        .btn-join-call { background: #008069; color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-top: 5px; width: 100%; }
 
         /* Image in Chat */
         .media-img { width: 100%; border-radius: 5px; margin-bottom: 5px; display: block; cursor: zoom-in; }
@@ -45,17 +53,10 @@
         #emoji-drawer.open { height: 200px; padding: 10px; }
         .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
 
-        /* IMAGE VIEWER (ZOOM & DOWNLOAD) */
-        #image-viewer {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
+        /* IMAGE VIEWER */
+        #image-viewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         #viewer-img { max-width: 100%; max-height: 80%; transition: transform 0.2s; }
-        .viewer-controls {
-            position: absolute; bottom: 30px; display: flex; gap: 20px;
-            background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px;
-        }
+        .viewer-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; }
         .ctrl-btn { color: white; font-size: 24px; cursor: pointer; background: none; border: none; }
         .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; z-index: 10000; }
 
@@ -86,23 +87,23 @@
 
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
-            <h4>Chat Private</h4>
-            <p class="text-muted small mb-4">Chat + Foto + Fitur Lengkap</p>
-            <button onclick="createRoom()" class="btn btn-success w-100 py-2">+ Buat Chat Baru</button>
+            <h4>WA Ultimate</h4>
+            <p class="text-muted small mb-4">Chat • Foto • Video Call (Free)</p>
+            <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
         </div>
 
         <div id="header-area" class="wa-header" style="display:none;">
             <i class="bi bi-arrow-left me-2" onclick="window.location.reload()" style="cursor:pointer;"></i>
-            
-            <div class="wa-avatar">
-                <i class="bi bi-person-fill"></i>
-            </div>
-            
+            <div class="wa-avatar"><i class="bi bi-person-fill"></i></div>
             <div style="flex:1;">
-                <div style="font-weight: 600;">Haya & Uce</div>
+                <div style="font-weight: 600;">Secret User</div>
                 <div style="font-size: 11px; opacity: 0.8;" id="room-id-display">Online</div>
             </div>
-            <i class="bi bi-three-dots-vertical" onclick="copyLink()" style="cursor:pointer;"></i>
+            <div class="header-actions">
+                <i class="bi bi-camera-video-fill" onclick="startCall('video')"></i>
+                <i class="bi bi-telephone-fill" onclick="startCall('voice')"></i>
+                <i class="bi bi-three-dots-vertical" onclick="copyLink()"></i>
+            </div>
         </div>
 
         <div id="chat-container" style="display:none;"></div>
@@ -173,33 +174,42 @@
                     
                     if (data.deleted) {
                         div.className = `message ${isMe ? 'me' : 'them'} deleted`;
-                        div.innerHTML = `<i class="bi bi-slash-circle"></i> Pesan dihapus <div class="msg-meta">${time}</div>`;
+                        div.innerHTML = `<i class="bi bi-slash-circle"></i> Pesan dihapus`;
                     } else {
                         div.className = `message ${isMe ? 'me' : 'them'}`;
-                        let content = data.text;
                         
-                        if (data.image64) {
-                            // Gambar bisa diklik untuk zoom (Passing string Base64 ke fungsi JS global)
-                            // Kita gunakan event listener nanti biar string base64 yang panjang aman
-                            content = `<img src="${data.image64}" class="media-img" id="img-${msgId}"> ${data.text}`;
-                        }
-
-                        div.innerHTML = `${content} <div class="msg-meta">${time} ${isMe ? '<i class="bi bi-check-all msg-tick"></i>' : ''}</div>`;
-                        
-                        // Logic Click: Kalau text -> Hapus, Kalau Image -> Zoom
-                        if (data.image64) {
-                            // Timeout kecil biar elemen render dulu
-                            setTimeout(() => {
-                                const imgEl = document.getElementById(`img-${msgId}`);
-                                if(imgEl) imgEl.onclick = (e) => {
-                                    e.stopPropagation(); // Biar gak memicu delete modal
-                                    openViewer(data.image64);
-                                };
-                                // Area bubble sisanya memicu delete modal
-                                if(isMe) div.onclick = () => openDeleteModal(msgId);
-                            }, 100);
+                        // RENDER BERDASARKAN TIPE
+                        if (data.type === 'call') {
+                            // TAMPILAN TOMBOL VIDEO CALL
+                            div.innerHTML = `
+                                <div class="call-card">
+                                    <div style="font-weight:bold; margin-bottom:5px;">
+                                        <i class="bi bi-camera-video-fill text-success"></i> Panggilan Video
+                                    </div>
+                                    <small class="text-muted">Klik tombol di bawah untuk bergabung</small>
+                                    <button class="btn-join-call" onclick="window.open('${data.text}', '_blank')">
+                                        📞 GABUNG PANGGILAN
+                                    </button>
+                                </div>
+                                <div class="msg-meta">${time}</div>
+                            `;
                         } else {
-                            if(isMe) div.onclick = () => openDeleteModal(msgId);
+                            // TAMPILAN CHAT / GAMBAR BIASA
+                            let content = data.text;
+                            if (data.image64) {
+                                content = `<img src="${data.image64}" class="media-img" id="img-${msgId}"> ${data.text}`;
+                            }
+                            div.innerHTML = `${content} <div class="msg-meta">${time} ${isMe ? '<i class="bi bi-check-all msg-tick"></i>' : ''}</div>`;
+                            
+                            if (data.image64) {
+                                setTimeout(() => {
+                                    const imgEl = document.getElementById(`img-${msgId}`);
+                                    if(imgEl) imgEl.onclick = (e) => { e.stopPropagation(); openViewer(data.image64); };
+                                    if(isMe) div.onclick = () => openDeleteModal(msgId);
+                                }, 100);
+                            } else {
+                                if(isMe) div.onclick = () => openDeleteModal(msgId);
+                            }
                         }
                     }
                     container.appendChild(div);
@@ -207,6 +217,29 @@
                 setTimeout(()=> container.scrollTop = container.scrollHeight, 100);
             });
         }
+
+        // --- START CALL LOGIC (NEW!) ---
+        window.startCall = async (type) => {
+            if(!roomId) return;
+            const confirmCall = confirm(`Mulai ${type === 'video' ? 'Video' : 'Voice'} Call?`);
+            if(confirmCall) {
+                // Generate Link Jitsi Meet (Gratis & Secure)
+                // Format: meet.jit.si/SecretChat-[ROOM_ID]-[RANDOM]
+                const callLink = `https://meet.jit.si/SecretChat-${roomId}`;
+                
+                // Kirim pesan otomatis ke chat room
+                await addDoc(collection(db, "rooms", roomId, "messages"), {
+                    text: callLink, // Linknya disimpan di text
+                    type: 'call',   // Tipe pesan khusus
+                    senderId: myId,
+                    createdAt: serverTimestamp(),
+                    deleted: false
+                });
+
+                // Langsung buka linknya di tab baru (untuk penelpon)
+                window.open(callLink, '_blank');
+            }
+        };
 
         // --- SEND LOGIC ---
         window.sendMessage = async (imgBase64 = null) => {
@@ -216,17 +249,14 @@
 
             if ((text || imgBase64) && roomId) {
                 input.value = "";
-                try {
-                    await addDoc(collection(db, "rooms", roomId, "messages"), {
-                        text: text,
-                        image64: imgBase64,
-                        senderId: myId,
-                        createdAt: serverTimestamp(),
-                        deleted: false
-                    });
-                } catch (e) {
-                    alert("Gagal kirim. Gambar mungkin terlalu besar.");
-                }
+                await addDoc(collection(db, "rooms", roomId, "messages"), {
+                    text: text,
+                    image64: imgBase64,
+                    type: 'chat', // Default tipe
+                    senderId: myId,
+                    createdAt: serverTimestamp(),
+                    deleted: false
+                });
             }
         };
 
@@ -240,10 +270,9 @@
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600; // Sedikit naikkan kualitas
+                        const MAX_WIDTH = 600;
                         const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
+                        canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext("2d");
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
@@ -257,43 +286,21 @@
 
         // --- IMAGE VIEWER LOGIC ---
         let currentScale = 1;
-        
         window.openViewer = (src) => {
             const viewer = document.getElementById('image-viewer');
             const img = document.getElementById('viewer-img');
             const downloadBtn = document.getElementById('download-link');
-            
-            img.src = src;
-            downloadBtn.href = src; // Set link download
-            currentScale = 1;
-            img.style.transform = `scale(${currentScale})`;
+            img.src = src; downloadBtn.href = src; 
+            currentScale = 1; img.style.transform = `scale(${currentScale})`;
             viewer.style.display = 'flex';
         };
-
-        window.closeViewer = () => {
-            document.getElementById('image-viewer').style.display = 'none';
-        };
-
-        window.zoomIn = () => {
-            currentScale += 0.2;
-            document.getElementById('viewer-img').style.transform = `scale(${currentScale})`;
-        };
-
-        window.zoomOut = () => {
-            if(currentScale > 0.5) currentScale -= 0.2;
-            document.getElementById('viewer-img').style.transform = `scale(${currentScale})`;
-        };
-        
-        window.resetZoom = () => {
-            currentScale = 1;
-            document.getElementById('viewer-img').style.transform = `scale(${currentScale})`;
-        };
+        window.closeViewer = () => { document.getElementById('image-viewer').style.display = 'none'; };
+        window.zoomIn = () => { currentScale += 0.2; document.getElementById('viewer-img').style.transform = `scale(${currentScale})`; };
+        window.zoomOut = () => { if(currentScale > 0.5) currentScale -= 0.2; document.getElementById('viewer-img').style.transform = `scale(${currentScale})`; };
+        window.resetZoom = () => { currentScale = 1; document.getElementById('viewer-img').style.transform = `scale(${currentScale})`; };
 
         // --- UTILS ---
-        document.getElementById('message-input').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") window.sendMessage();
-        });
-
+        document.getElementById('message-input').addEventListener("keypress", (e) => { if (e.key === "Enter") window.sendMessage(); });
         window.openDeleteModal = (id) => { selectedMsgId = id; document.getElementById('delete-modal').style.display = 'flex'; };
         window.closeModal = () => { document.getElementById('delete-modal').style.display = 'none'; selectedMsgId = null; };
         window.confirmDelete = async () => {
@@ -309,7 +316,6 @@
             drawer.appendChild(s);
         });
         window.toggleEmoji = () => drawer.classList.toggle('open');
-
         window.createRoom = () => window.location.search = `?room=${Math.random().toString(36).substr(2,9)}`;
         window.copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Link tersalin!"); };
     </script>
