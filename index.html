@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Private Group Call</title>
+    <title>Private 1-on-1 Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -17,12 +17,20 @@
         
         .chat-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.4; z-index: 0; pointer-events: none; }
         
+        /* ACCESS DENIED SCREEN */
+        #blocked-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #222; z-index: 100000; color: white;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .lock-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; }
+
         /* HEADER */
         .wa-header { background-color: var(--wa-header); color: white; padding: 10px 15px; display: flex; align-items: center; z-index: 10; }
         .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #cfd8dc; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; overflow: hidden; }
         .header-actions i { font-size: 20px; margin-left: 18px; cursor: pointer; }
 
-        /* CHAT LIST */
+        /* CHAT LIST & BUBBLES */
         #chat-container { flex-grow: 1; overflow-y: auto; padding: 15px; z-index: 5; display: flex; flex-direction: column; }
         .message { max-width: 80%; padding: 6px 8px 6px 9px; margin-bottom: 4px; border-radius: 7.5px; position: relative; font-size: 14.2px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); word-wrap: break-word; display: flex; flex-wrap: wrap; align-items: flex-end; }
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
@@ -43,7 +51,7 @@
         #emoji-drawer.open { height: 200px; padding: 10px; }
         .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
 
-        /* INCOMING CALL */
+        /* CALL SCREENS */
         #incoming-call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.pinimg.com/originals/48/28/e0/4828e05a7069d8f9502b90ba4d338981.jpg'); background-size: cover; z-index: 99999; flex-direction: column; align-items: center; padding-top: 100px; color: white; }
         .caller-img { width: 120px; height: 120px; border-radius: 50%; background: #ccc; display: flex; align-items: center; justify-content: center; font-size: 50px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
         .call-actions { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: space-around; padding: 0 50px; }
@@ -52,11 +60,9 @@
         .btn-reject { background: #d50000; }
         @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(0, 200, 83, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 200, 83, 0); } }
 
-        /* ACTIVE CALL */
         #active-call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99998; flex-direction: column; }
         #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
         #localVideo { position: absolute; bottom: 140px; right: 20px; width: 100px; height: 150px; background: #333; border-radius: 10px; object-fit: cover; border: 2px solid white; transform: scaleX(-1); z-index: 100000; transition: all 0.3s; }
-        
         .active-call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 100001; flex-wrap: wrap; }
         .ctrl-btn { width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 20px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .ctrl-btn.off { background: white; color: black; }
@@ -72,9 +78,16 @@
     <input type="file" id="file-input" hidden accept="image/*,video/mp4,video/webm">
     <audio id="ringtone" loop src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Bell_ring_effect.ogg"></audio>
 
+    <div id="blocked-screen">
+        <div class="lock-icon"><i class="bi bi-lock-fill"></i></div>
+        <h3>ROOM PENUH</h3>
+        <p>Maaf, ruangan chat ini sudah terisi 2 orang.<br>Demi privasi, akses ditolak.</p>
+        <button onclick="window.location.href=window.location.pathname" class="btn btn-outline-light mt-3">Coba Room Lain</button>
+    </div>
+
     <div id="incoming-call-overlay">
         <div class="caller-img"><i class="bi bi-person-fill"></i></div>
-        <h2 id="caller-name">Group Call</h2>
+        <h2 id="caller-name">Private Call</h2>
         <p id="call-type-text">Incoming Call...</p>
         <div class="call-actions">
             <button class="btn-action-call btn-reject" onclick="rejectCallLocal()"><i class="bi bi-telephone-x-fill"></i></button>
@@ -89,7 +102,8 @@
         <video id="localVideo" autoplay playsinline muted></video>
         
         <div class="active-call-controls">
-            <button class="ctrl-btn" id="btn-switch" onclick="switchCamera()"><i class="bi bi-arrow-repeat"></i></button> <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()"><i class="bi bi-mic-fill"></i></button>
+            <button class="ctrl-btn" id="btn-switch" onclick="switchCamera()"><i class="bi bi-arrow-repeat"></i></button>
+            <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()"><i class="bi bi-mic-fill"></i></button>
             <button class="hangup-btn" onclick="hangupCall()"><i class="bi bi-telephone-x-fill"></i></button>
             <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()"><i class="bi bi-camera-video-fill"></i></button>
         </div>
@@ -99,14 +113,14 @@
         <div class="chat-background"></div>
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
-            <h4>Chatting Group</h4>
-            <p class="text-muted small mb-4">Switch Cam, Read Receipt & Group Logic</p>
+            <h4>Private 1-on-1</h4>
+            <p class="text-muted small mb-4">Secure • Private • Encrypted</p>
             <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
         </div>
         <div id="header-area" class="wa-header" style="display:none;">
             <div class="wa-avatar"><i class="bi bi-person-fill"></i></div>
             <div style="flex:1;">
-                <div style="font-weight: 600;">Chatting Group</div>
+                <div style="font-weight: 600;">Secret User</div>
                 <div style="font-size: 11px; opacity: 0.8;" id="room-id-display">Online</div>
             </div>
             <div class="header-actions">
@@ -158,9 +172,43 @@
         let localStream = null;
         let callDocRef = null;
         let incomingCallData = null;
-        let currentFacingMode = 'user'; // 'user' = depan, 'environment' = belakang
+        let currentFacingMode = 'user'; 
 
+        // --- SECURITY & INIT ---
         if (roomId) {
+            checkRoomSecurity(roomId).then(allowed => {
+                if(allowed) {
+                    initApp();
+                } else {
+                    document.getElementById('blocked-screen').style.display = 'flex';
+                }
+            });
+        }
+
+        async function checkRoomSecurity(id) {
+            const roomRef = doc(db, "rooms", id);
+            const snap = await getDoc(roomRef);
+            let participants = [];
+            
+            if(snap.exists()) {
+                participants = snap.data().participants || [];
+            }
+
+            // Jika saya sudah ada di list -> Boleh Masuk
+            if(participants.includes(myId)) return true;
+
+            // Jika belum ada tapi list < 2 -> Masukkan Saya & Boleh Masuk
+            if(participants.length < 2) {
+                participants.push(myId);
+                await setDoc(roomRef, { participants: participants }, { merge: true });
+                return true;
+            }
+
+            // Jika sudah 2 orang -> TOLAK
+            return false;
+        }
+
+        function initApp() {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('header-area').style.display = 'flex';
             document.getElementById('chat-container').style.display = 'flex';
@@ -200,9 +248,7 @@
             callDocRef = doc(db, "rooms", roomId, "calls", "active_call");
             onSnapshot(callDocRef, (snapshot) => {
                 const data = snapshot.data();
-                // Jika ada panggilan, dan kita belum connect, dan bukan kita yg nelpon
                 if (data && data.offer && !pc && data.callerId !== myId) {
-                    // Jika status sudah connected (artinya sudah ada orang lain yg angkat), kita diam saja
                     if (data.status === 'connected') {
                         document.getElementById('incoming-call-overlay').style.display = 'none';
                         document.getElementById('ringtone').pause();
@@ -214,6 +260,7 @@
             });
         }
 
+        // --- CALL LOGIC ---
         window.startCallSetup = async (type) => {
             document.getElementById('active-call-overlay').style.display = 'flex';
             document.getElementById('call-status-msg').innerText = "Memanggil...";
@@ -243,8 +290,6 @@
         window.rejectCallLocal = () => {
             document.getElementById('ringtone').pause();
             document.getElementById('incoming-call-overlay').style.display = 'none';
-            // Kita HANYA menyembunyikan UI lokal. Tidak menghapus database.
-            // Jadi HP teman lain masih bunyi.
         };
 
         window.answerCall = async () => {
@@ -258,33 +303,22 @@
             await pc.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
             const answerDescription = await pc.createAnswer();
             await pc.setLocalDescription(answerDescription);
-            // Update status jadi connected -> Otomatis mematikan dering di HP teman lain
             await updateDoc(callDocRef, { answer: { type: answerDescription.type, sdp: answerDescription.sdp }, status: 'connected' });
         };
 
-        // --- FITUR SWITCH CAMERA ---
         window.switchCamera = async () => {
             if (!localStream) return;
-            // Ganti mode
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
-            
-            // Stop video track lama
             localStream.getVideoTracks().forEach(track => track.stop());
-            
-            // Ambil stream baru
             const constraints = { audio: true, video: { facingMode: currentFacingMode } };
             const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-            
-            // Update Local Video View
             document.getElementById('localVideo').srcObject = newStream;
-            
-            // Replace Track di PeerConnection agar lawan melihat kamera baru
             const videoTrack = newStream.getVideoTracks()[0];
             if (pc) {
                 const sender = pc.getSenders().find(s => s.track.kind === videoTrack.kind);
                 if (sender) sender.replaceTrack(videoTrack);
             }
-            localStream = newStream; // Update referensi global
+            localStream = newStream;
         };
 
         async function initializePC() {
@@ -305,7 +339,6 @@
         }
 
         async function getLocalStream(type) {
-            // Default pakai kamera depan ('user')
             const constraints = { audio: true, video: type === 'video' ? { facingMode: currentFacingMode } : false };
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
