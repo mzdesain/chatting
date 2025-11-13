@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Private 1-on-1 Chat</title>
+    <title>WA Login OTP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -16,22 +16,24 @@
         @media (min-width: 768px) { #app-frame { max-width: 450px; height: 95dvh; margin-top: 2.5vh; } }
         
         .chat-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.4; z-index: 0; pointer-events: none; }
-        
-        /* ACCESS DENIED SCREEN */
-        #blocked-screen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #222; z-index: 100000; color: white;
-            flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        }
-        .lock-icon { font-size: 80px; color: #ff4444; margin-bottom: 20px; }
 
-        /* HEADER */
+        /* LOGIN SCREEN */
+        #login-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 2000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 30px; text-align: center;
+        }
+        .wa-logo { width: 80px; margin-bottom: 30px; }
+        .login-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; font-size: 16px; }
+        .btn-login { width: 100%; background: #008069; color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; }
+        #otp-group { display: none; width: 100%; }
+
+        /* HEADER & CHAT */
         .wa-header { background-color: var(--wa-header); color: white; padding: 10px 15px; display: flex; align-items: center; z-index: 10; }
         .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #cfd8dc; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; overflow: hidden; }
         .header-actions i { font-size: 20px; margin-left: 18px; cursor: pointer; }
-
-        /* CHAT LIST & BUBBLES */
         #chat-container { flex-grow: 1; overflow-y: auto; padding: 15px; z-index: 5; display: flex; flex-direction: column; }
+        
         .message { max-width: 80%; padding: 6px 8px 6px 9px; margin-bottom: 4px; border-radius: 7.5px; position: relative; font-size: 14.2px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); word-wrap: break-word; display: flex; flex-wrap: wrap; align-items: flex-end; }
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
         .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; background: #fff; }
@@ -41,53 +43,68 @@
         .msg-tick.read { color: #53bdeb; }
         .media-content { width: 100%; border-radius: 5px; margin-bottom: 5px; display: block; }
 
-        /* INPUT AREA */
+        /* CALL OVERLAYS */
+        #incoming-call-overlay, #active-call-overlay, #blocked-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; flex-direction: column; align-items: center; }
+        #incoming-call-overlay { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.pinimg.com/originals/48/28/e0/4828e05a7069d8f9502b90ba4d338981.jpg'); background-size: cover; padding-top: 100px; color: white; }
+        #active-call-overlay { background: #000; }
+        #blocked-screen { background: #222; color: white; justify-content: center; text-align: center; }
+
+        #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
+        #localVideo { position: absolute; bottom: 140px; right: 20px; width: 100px; height: 150px; background: #333; border-radius: 10px; object-fit: cover; border: 2px solid white; transform: scaleX(-1); z-index: 100000; }
+        
+        .call-actions { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: space-around; }
+        .btn-action-call { width: 70px; height: 70px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; }
+        .btn-accept { background: #00c853; animation: pulse 1.5s infinite; }
+        .btn-reject { background: #d50000; }
+        
+        .active-call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 100001; }
+        .ctrl-btn { width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 20px; background: rgba(255,255,255,0.2); }
+        .ctrl-btn.off { background: white; color: black; }
+        .hangup-btn { width: 60px; height: 60px; border-radius: 50%; background: red; color: white; border: none; font-size: 24px; }
+        
+        /* UTILS */
         .wa-input-area { flex-shrink: 0; background: #fff; padding: 5px 10px; display: flex; align-items: center; z-index: 20; min-height: 60px; }
         .wa-input-field { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; outline: none; font-size: 15px; background: #fff; margin: 0 5px; border: 1px solid #ddd; }
+        .btn-send { background: #008069; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; }
         .btn-icon { background: transparent; border: none; font-size: 24px; color: #54656f; padding: 0 8px; }
-        .btn-send { background: #008069; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
-        
         #emoji-drawer { height: 0; overflow: hidden; transition: height 0.3s; background: #eee; z-index: 15; display: grid; grid-template-columns: repeat(8, 1fr); padding: 0; overflow-y: auto; }
         #emoji-drawer.open { height: 200px; padding: 10px; }
         .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
-
-        /* CALL SCREENS */
-        #incoming-call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.pinimg.com/originals/48/28/e0/4828e05a7069d8f9502b90ba4d338981.jpg'); background-size: cover; z-index: 99999; flex-direction: column; align-items: center; padding-top: 100px; color: white; }
-        .caller-img { width: 120px; height: 120px; border-radius: 50%; background: #ccc; display: flex; align-items: center; justify-content: center; font-size: 50px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .call-actions { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: space-around; padding: 0 50px; }
-        .btn-action-call { width: 70px; height: 70px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; cursor: pointer; }
-        .btn-accept { background: #00c853; animation: pulse 1.5s infinite; }
-        .btn-reject { background: #d50000; }
+        
         @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(0, 200, 83, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 200, 83, 0); } }
-
-        #active-call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99998; flex-direction: column; }
-        #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
-        #localVideo { position: absolute; bottom: 140px; right: 20px; width: 100px; height: 150px; background: #333; border-radius: 10px; object-fit: cover; border: 2px solid white; transform: scaleX(-1); z-index: 100000; transition: all 0.3s; }
-        .active-call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 100001; flex-wrap: wrap; }
-        .ctrl-btn { width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 20px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .ctrl-btn.off { background: white; color: black; }
-        .hangup-btn { width: 60px; height: 60px; border-radius: 50%; background: red; color: white; border: none; font-size: 24px; display: flex; align-items: center; justify-content: center; }
-        .voice-avatar { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; border-radius: 50%; background: #555; align-items: center; justify-content: center; font-size: 60px; color: white; }
-
-        #landing-page { z-index: 50; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        #delete-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
     </style>
 </head>
 <body>
     <input type="file" id="file-input" hidden accept="image/*,video/mp4,video/webm">
     <audio id="ringtone" loop src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Bell_ring_effect.ogg"></audio>
 
+    <div id="login-screen">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="wa-logo">
+        <h4>Verifikasi Nomor Anda</h4>
+        <p class="text-muted small">Masukkan nomor HP (contoh: +628123...)</p>
+        
+        <div id="phone-group">
+            <input type="tel" id="phone-number" class="login-input" placeholder="+62812xxxxxxx" value="+62">
+            <div id="recaptcha-container"></div>
+            <button class="btn-login" onclick="sendOTP()">Kirim SMS Kode</button>
+        </div>
+
+        <div id="otp-group">
+            <input type="number" id="otp-code" class="login-input" placeholder="Masukkan 6 digit kode">
+            <button class="btn-login" onclick="verifyOTP()">Verifikasi & Masuk</button>
+            <button class="btn btn-link mt-2" onclick="location.reload()">Ubah Nomor</button>
+        </div>
+    </div>
+
     <div id="blocked-screen">
-        <div class="lock-icon"><i class="bi bi-lock-fill"></i></div>
+        <i class="bi bi-lock-fill" style="font-size: 80px; color: #ff4444; margin-bottom: 20px;"></i>
         <h3>ROOM PENUH</h3>
-        <p>Maaf, ruangan chat ini sudah terisi 2 orang.<br>Demi privasi, akses ditolak.</p>
-        <button onclick="window.location.href=window.location.pathname" class="btn btn-outline-light mt-3">Coba Room Lain</button>
+        <p>Ruangan ini sudah penuh (Maks 2 orang).<br>Akses ditolak.</p>
     </div>
 
     <div id="incoming-call-overlay">
-        <div class="caller-img"><i class="bi bi-person-fill"></i></div>
-        <h2 id="caller-name">Private Call</h2>
+        <div class="wa-avatar" style="width:120px; height:120px; font-size:50px; margin-bottom:20px;"><i class="bi bi-person-fill"></i></div>
+        <h2 id="caller-name">...</h2>
         <p id="call-type-text">Incoming Call...</p>
         <div class="call-actions">
             <button class="btn-action-call btn-reject" onclick="rejectCallLocal()"><i class="bi bi-telephone-x-fill"></i></button>
@@ -96,11 +113,8 @@
     </div>
 
     <div id="active-call-overlay">
-        <div id="voice-ui" class="voice-avatar"><i class="bi bi-mic-fill"></i></div>
-        <div class="text-white text-center mt-5" style="z-index: 999;" id="call-status-msg">Menghubungkan...</div>
         <video id="remoteVideo" autoplay playsinline></video>
         <video id="localVideo" autoplay playsinline muted></video>
-        
         <div class="active-call-controls">
             <button class="ctrl-btn" id="btn-switch" onclick="switchCamera()"><i class="bi bi-arrow-repeat"></i></button>
             <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()"><i class="bi bi-mic-fill"></i></button>
@@ -109,28 +123,21 @@
         </div>
     </div>
 
-    <div id="app-frame">
-        <div class="chat-background"></div>
-        <div id="landing-page">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
-            <h4>Private 1-on-1</h4>
-            <p class="text-muted small mb-4">Secure • Private • Encrypted</p>
-            <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
-        </div>
-        <div id="header-area" class="wa-header" style="display:none;">
+    <div id="app-frame" style="display:none;"> <div class="chat-background"></div>
+        <div id="header-area" class="wa-header">
             <div class="wa-avatar"><i class="bi bi-person-fill"></i></div>
             <div style="flex:1;">
-                <div style="font-weight: 600;">Secret User</div>
-                <div style="font-size: 11px; opacity: 0.8;" id="room-id-display">Online</div>
+                <div style="font-weight: 600;" id="header-title">Chat</div>
+                <div style="font-size: 11px; opacity: 0.8;">Online</div>
             </div>
             <div class="header-actions">
                 <i class="bi bi-camera-video-fill" onclick="startCallSetup('video')"></i>
                 <i class="bi bi-telephone-fill" onclick="startCallSetup('voice')"></i>
-                <i class="bi bi-three-dots-vertical" onclick="copyLink()"></i>
+                <i class="bi bi-box-arrow-right" onclick="logout()"></i>
             </div>
         </div>
-        <div id="chat-container" style="display:none;"></div>
-        <div class="wa-input-area" id="input-area-wrapper" style="display:none;">
+        <div id="chat-container"></div>
+        <div class="wa-input-area">
             <button class="btn-icon" onclick="toggleEmoji()"><i class="bi bi-emoji-smile"></i></button>
             <button class="btn-icon" onclick="triggerFile()"><i class="bi bi-paperclip" style="transform: rotate(45deg);"></i></button>
             <input type="text" id="message-input" class="wa-input-field" placeholder="Ketik pesan" autocomplete="off">
@@ -138,18 +145,10 @@
         </div>
         <div id="emoji-drawer"></div>
     </div>
-    <div id="delete-modal">
-        <div class="modal-content text-center">
-            <h5>Hapus Pesan?</h5>
-            <div class="d-flex gap-2 justify-content-center mt-3">
-                <button class="btn btn-secondary btn-sm" onclick="closeModal()">Batal</button>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
-            </div>
-        </div>
-    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -162,59 +161,114 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
-        let myId = localStorage.getItem('wa_uid') || 'user_' + Math.random().toString(36).substr(2,9);
-        localStorage.setItem('wa_uid', myId);
-        const roomId = new URLSearchParams(window.location.search).get('room');
-        
-        const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
-        let pc = null;
-        let localStream = null;
-        let callDocRef = null;
-        let incomingCallData = null;
-        let currentFacingMode = 'user'; 
+        auth.useDeviceLanguage();
 
-        // --- SECURITY & INIT ---
-        if (roomId) {
-            checkRoomSecurity(roomId).then(allowed => {
-                if(allowed) {
-                    initApp();
-                } else {
-                    document.getElementById('blocked-screen').style.display = 'flex';
-                }
+        let myId = null;
+        let myPhone = null;
+        let confirmationResult = null;
+        const roomId = new URLSearchParams(window.location.search).get('room');
+
+        // --- LOGIN LOGIC ---
+        window.initRecaptcha = () => {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', { 'size': 'normal' }, auth);
+                window.recaptchaVerifier.render();
+            }
+        };
+
+        window.sendOTP = () => {
+            const phoneNumber = document.getElementById('phone-number').value;
+            if (phoneNumber.length < 10) { alert("Nomor HP tidak valid"); return; }
+            
+            window.initRecaptcha();
+            signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    document.getElementById('phone-group').style.display = 'none';
+                    document.getElementById('otp-group').style.display = 'block';
+                    alert("Kode OTP terkirim!");
+                }).catch((error) => {
+                    alert("Gagal kirim OTP: " + error.message);
+                    console.error(error);
+                });
+        };
+
+        window.verifyOTP = () => {
+            const code = document.getElementById('otp-code').value;
+            confirmationResult.confirm(code).then((result) => {
+                // User signed in successfully.
+                const user = result.user;
+                handleLoginSuccess(user);
+            }).catch((error) => {
+                alert("Kode Salah!");
             });
+        };
+
+        window.logout = () => {
+            signOut(auth).then(() => location.reload());
+        };
+
+        function handleLoginSuccess(user) {
+            myId = user.uid; // ID Stabil dari Firebase Auth
+            myPhone = user.phoneNumber; // Nomor HP
+            document.getElementById('login-screen').style.display = 'none';
+            
+            // Tampilkan UI Chat
+            if(roomId) {
+                checkRoomSecurity(roomId).then(allowed => {
+                    if(allowed) {
+                        document.getElementById('app-frame').style.display = 'flex';
+                        document.getElementById('header-title').innerText = `Chat (${myPhone})`;
+                        initChatApp();
+                    } else {
+                        document.getElementById('blocked-screen').style.display = 'flex';
+                    }
+                });
+            } else {
+                // Jika tidak ada room, buat room baru otomatis
+                const newRoom = Math.random().toString(36).substr(2,9);
+                window.location.search = `?room=${newRoom}`;
+            }
         }
 
+        // Cek Status Login saat Load
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                handleLoginSuccess(user);
+            } else {
+                window.initRecaptcha(); // Siapkan Recaptcha jika belum login
+            }
+        });
+
+        // --- ROOM SECURITY ---
         async function checkRoomSecurity(id) {
             const roomRef = doc(db, "rooms", id);
             const snap = await getDoc(roomRef);
             let participants = [];
+            if(snap.exists()) participants = snap.data().participants || [];
             
-            if(snap.exists()) {
-                participants = snap.data().participants || [];
-            }
-
-            // Jika saya sudah ada di list -> Boleh Masuk
             if(participants.includes(myId)) return true;
-
-            // Jika belum ada tapi list < 2 -> Masukkan Saya & Boleh Masuk
             if(participants.length < 2) {
                 participants.push(myId);
-                await setDoc(roomRef, { participants: participants }, { merge: true });
+                // Simpan juga nomor HP peserta biar lawan bicara tau
+                await setDoc(roomRef, { participants: participants, phones: {[myId]: myPhone} }, { merge: true });
                 return true;
             }
-
-            // Jika sudah 2 orang -> TOLAK
             return false;
         }
 
-        function initApp() {
-            document.getElementById('landing-page').style.display = 'none';
-            document.getElementById('header-area').style.display = 'flex';
-            document.getElementById('chat-container').style.display = 'flex';
-            document.getElementById('input-area-wrapper').style.display = 'flex';
-            document.getElementById('room-id-display').innerText = "ID: " + roomId;
+        // --- APP CORE LOGIC ---
+        let pc = null;
+        let localStream = null;
+        let callDocRef = null;
+        let incomingCallData = null;
+        let currentFacingMode = 'user';
+        const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
+        function initChatApp() {
+            // 1. Chat Listener
             const q = query(collection(db, "rooms", roomId, "messages"), orderBy("createdAt", "asc"));
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-container');
@@ -222,29 +276,29 @@
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const isMe = data.senderId === myId;
-                    const div = document.createElement('div');
-                    
                     if (!isMe && !data.read) updateDoc(doc(db, "rooms", roomId, "messages", docSnap.id), { read: true });
 
+                    const div = document.createElement('div');
                     if(data.deleted) {
                         div.className = `message ${isMe?'me':'them'} deleted`; div.innerHTML = `<i class="bi bi-slash-circle"></i> Dihapus`;
                     } else {
                         div.className = `message ${isMe?'me':'them'}`;
                         let content = `<div class="msg-text">${data.text}</div>`;
                         if(data.mediaData) {
-                            if(data.type === 'video') content = `<video src="${data.mediaData}" controls class="media-content"></video> ${data.text}`;
-                            else content = `<img src="${data.mediaData}" class="media-content"> ${data.text}`;
+                            content = (data.type === 'video') ? 
+                                `<video src="${data.mediaData}" controls class="media-content"></video> ${data.text}` : 
+                                `<img src="${data.mediaData}" class="media-content"> ${data.text}`;
                         }
                         const tickIcon = data.read ? 'bi-check-all read' : 'bi-check-all';
                         const tickHtml = isMe ? `<i class="bi ${tickIcon} msg-tick"></i>` : '';
                         div.innerHTML = `${content} <div class="msg-meta">${data.createdAt?.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||''} ${tickHtml}</div>`;
-                        if(isMe) div.onclick = () => { window.selectedMsgId = docSnap.id; document.getElementById('delete-modal').style.display = 'flex'; };
                     }
                     container.appendChild(div);
                 });
                 if(container.scrollTop + container.clientHeight >= container.scrollHeight - 100) container.scrollTop = container.scrollHeight;
             });
 
+            // 2. Call Listener
             callDocRef = doc(db, "rooms", roomId, "calls", "active_call");
             onSnapshot(callDocRef, (snapshot) => {
                 const data = snapshot.data();
@@ -254,62 +308,54 @@
                         document.getElementById('ringtone').pause();
                         return;
                     }
-                    showIncomingCall(data);
+                    // Tampilkan Nomor Penelpon
+                    document.getElementById('caller-name').innerText = data.callerPhone || "Unknown";
+                    document.getElementById('incoming-call-overlay').style.display = 'flex';
+                    document.getElementById('ringtone').play().catch(e=>{});
+                    incomingCallData = data;
                 }
                 if (!data && pc) { cleanupCall(); alert("Panggilan berakhir."); }
             });
         }
 
-        // --- CALL LOGIC ---
+        // --- CALL FUNCTIONS ---
         window.startCallSetup = async (type) => {
             document.getElementById('active-call-overlay').style.display = 'flex';
-            document.getElementById('call-status-msg').innerText = "Memanggil...";
-            if(type === 'voice') document.getElementById('voice-ui').style.display = 'flex';
-            await initializePC();
-            await getLocalStream(type);
-            const offerDescription = await pc.createOffer();
-            await pc.setLocalDescription(offerDescription);
-            await setDoc(callDocRef, { offer: { sdp: offerDescription.sdp, type: offerDescription.type }, callerId: myId, type: type, status: 'offering' });
-
+            await initializePC(); await getLocalStream(type);
+            const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
+            // Kirim juga Nomor HP kita biar muncul di layar lawan
+            await setDoc(callDocRef, { 
+                offer: { sdp: offer.sdp, type: offer.type }, 
+                callerId: myId, callerPhone: myPhone, 
+                type: type, status: 'offering' 
+            });
+            
             onSnapshot(callDocRef, (snapshot) => {
                 const data = snapshot.data();
                 if(!pc) return;
-                if (data?.answer && !pc.currentRemoteDescription) {
-                    pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-                }
+                if (data?.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(data.answer));
             });
         };
 
-        function showIncomingCall(data) {
-            incomingCallData = data;
-            document.getElementById('incoming-call-overlay').style.display = 'flex';
-            document.getElementById('call-type-text').innerText = `WhatsApp ${data.type === 'video' ? 'Video' : 'Voice'} Call`;
-            document.getElementById('ringtone').play().catch(e => console.log("Tap to enable sound"));
-        }
+        window.answerCall = async () => {
+            document.getElementById('incoming-call-overlay').style.display = 'none';
+            document.getElementById('ringtone').pause();
+            document.getElementById('active-call-overlay').style.display = 'flex';
+            await initializePC(); await getLocalStream(incomingCallData.type);
+            await pc.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+            const answer = await pc.createAnswer(); await pc.setLocalDescription(answer);
+            await updateDoc(callDocRef, { answer: { type: answer.type, sdp: answer.sdp }, status: 'connected' });
+        };
 
         window.rejectCallLocal = () => {
             document.getElementById('ringtone').pause();
             document.getElementById('incoming-call-overlay').style.display = 'none';
         };
 
-        window.answerCall = async () => {
-            document.getElementById('ringtone').pause();
-            document.getElementById('incoming-call-overlay').style.display = 'none';
-            document.getElementById('active-call-overlay').style.display = 'flex';
-            const type = incomingCallData.type;
-            if(type === 'voice') document.getElementById('voice-ui').style.display = 'flex';
-            await initializePC();
-            await getLocalStream(type);
-            await pc.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
-            const answerDescription = await pc.createAnswer();
-            await pc.setLocalDescription(answerDescription);
-            await updateDoc(callDocRef, { answer: { type: answerDescription.type, sdp: answerDescription.sdp }, status: 'connected' });
-        };
-
         window.switchCamera = async () => {
             if (!localStream) return;
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
-            localStream.getVideoTracks().forEach(track => track.stop());
+            localStream.getVideoTracks().forEach(t => t.stop());
             const constraints = { audio: true, video: { facingMode: currentFacingMode } };
             const newStream = await navigator.mediaDevices.getUserMedia(constraints);
             document.getElementById('localVideo').srcObject = newStream;
@@ -323,17 +369,12 @@
 
         async function initializePC() {
             pc = new RTCPeerConnection(servers);
-            pc.onicecandidate = (event) => {
-                if (event.candidate) addDoc(collection(db, "rooms", roomId, "calls", "active_call", "candidates"), event.candidate.toJSON());
-            };
-            pc.ontrack = (event) => {
-                document.getElementById('remoteVideo').srcObject = event.streams[0];
-                document.getElementById('call-status-msg').style.display = 'none';
-            };
+            pc.onicecandidate = event => { if (event.candidate) addDoc(collection(db, "rooms", roomId, "calls", "active_call", "candidates"), event.candidate.toJSON()); };
+            pc.ontrack = event => document.getElementById('remoteVideo').srcObject = event.streams[0];
             const candidatesCol = collection(db, "rooms", roomId, "calls", "active_call", "candidates");
-            onSnapshot(candidatesCol, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') pc.addIceCandidate(new RTCIceCandidate(change.doc.data())).catch(e => {});
+            onSnapshot(candidatesCol, snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') pc.addIceCandidate(new RTCIceCandidate(change.doc.data())).catch(e=>{});
                 });
             });
         }
@@ -346,35 +387,21 @@
         }
 
         window.toggleMic = () => {
-            const audioTrack = localStream.getAudioTracks()[0];
-            if(audioTrack) {
-                audioTrack.enabled = !audioTrack.enabled;
-                document.getElementById('btn-mic').classList.toggle('off', !audioTrack.enabled);
-                document.querySelector('#btn-mic i').classList.toggle('bi-mic-fill', audioTrack.enabled);
-                document.querySelector('#btn-mic i').classList.toggle('bi-mic-mute-fill', !audioTrack.enabled);
-            }
+            const track = localStream.getAudioTracks()[0];
+            if(track) { track.enabled = !track.enabled; document.getElementById('btn-mic').classList.toggle('off'); }
         };
-
         window.toggleCam = () => {
-            const videoTrack = localStream.getVideoTracks()[0];
-            if(videoTrack) {
-                videoTrack.enabled = !videoTrack.enabled;
-                document.getElementById('btn-cam').classList.toggle('off', !videoTrack.enabled);
-                document.querySelector('#btn-cam i').classList.toggle('bi-camera-video-fill', videoTrack.enabled);
-                document.querySelector('#btn-cam i').classList.toggle('bi-camera-video-off-fill', !videoTrack.enabled);
-            }
+            const track = localStream.getVideoTracks()[0];
+            if(track) { track.enabled = !track.enabled; document.getElementById('btn-cam').classList.toggle('off'); }
         };
-
         window.hangupCall = async () => { if(callDocRef) await deleteDoc(callDocRef); cleanupCall(); };
+        
         function cleanupCall() {
             if (pc) { pc.close(); pc = null; }
-            if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
+            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
             document.getElementById('active-call-overlay').style.display = 'none';
             document.getElementById('incoming-call-overlay').style.display = 'none';
             document.getElementById('ringtone').pause();
-            document.getElementById('voice-ui').style.display = 'none';
-            document.getElementById('btn-mic').classList.remove('off');
-            document.getElementById('btn-cam').classList.remove('off');
         }
 
         window.sendMessage = async (mediaData = null, type = 'text') => {
@@ -390,18 +417,17 @@
 
         window.triggerFile = () => document.getElementById('file-input').click();
         document.getElementById('file-input').addEventListener('change', (e) => {
-            const file = e.target.files[0]; if (!file) return;
+            const file = e.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 if(file.size > 3 * 1024 * 1024) { alert("Max 3MB"); return; }
-                if(file.type.startsWith('video')) { sendMessage(ev.target.result, 'video'); } 
+                if(file.type.startsWith('video')) sendMessage(ev.target.result, 'video');
                 else {
                     const img = new Image(); img.onload = () => {
-                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext("2d");
-                        const MAX_WIDTH = 600; const scale = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH; canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        sendMessage(canvas.toDataURL("image/jpeg", 0.7), 'image');
+                        const c = document.createElement('canvas'); const ctx = c.getContext("2d");
+                        const w = 600; const h = img.height * (w/img.width);
+                        c.width = w; c.height = h; ctx.drawImage(img,0,0,w,h);
+                        sendMessage(c.toDataURL("image/jpeg",0.7), 'image');
                     }; img.src = ev.target.result;
                 }
             }; reader.readAsDataURL(file);
@@ -409,10 +435,7 @@
 
         document.getElementById('message-input').addEventListener("keypress", (e) => { if (e.key === "Enter") window.sendMessage(); });
         window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
-        window.closeModal = () => document.getElementById('delete-modal').style.display = 'none';
-        window.confirmDelete = async () => { if(window.selectedMsgId) await updateDoc(doc(db, "rooms", roomId, "messages", window.selectedMsgId), {deleted:true, text:"", mediaData:null}); window.closeModal(); };
-        window.createRoom = () => window.location.search = `?room=${Math.random().toString(36).substr(2,9)}`;
-        window.copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Link tersalin!"); };
+        
         const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍","👻","💩"];
         emojis.forEach(e => { const s = document.createElement('span'); s.className='emoji-btn'; s.innerText=e; s.onclick=()=>{document.getElementById('message-input').value+=e}; document.getElementById('emoji-drawer').appendChild(s); });
     </script>
