@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WA Auto-Connect</title>
+    <title>WA Native WebRTC</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src='https://meet.jit.si/external_api.js'></script>
-
+    
     <style>
         :root { --wa-header: #008069; --wa-bg: #efeae2; --wa-bubble-me: #d9fdd3; --wa-bubble-them: #ffffff; }
         * { box-sizing: border-box; }
         body { background-color: #d1d7db; font-family: Helvetica, Arial, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
+        
         #app-frame { width: 100%; height: 100%; background-color: var(--wa-bg); display: flex; flex-direction: column; position: relative; }
         @media (min-width: 768px) { #app-frame { max-width: 450px; height: 95dvh; margin-top: 2.5vh; } }
+        
         .chat-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.4; z-index: 0; pointer-events: none; }
         
+        /* UI CHAT STANDAR */
         .wa-header { background-color: var(--wa-header); color: white; padding: 10px 15px; display: flex; align-items: center; z-index: 10; }
         .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #cfd8dc; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; overflow: hidden; }
         .header-actions i { font-size: 20px; margin-left: 18px; cursor: pointer; }
@@ -24,46 +26,61 @@
         .message { max-width: 80%; padding: 6px 9px 8px 9px; margin-bottom: 4px; border-radius: 7.5px; position: relative; font-size: 14.2px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); word-wrap: break-word; }
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
         .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; background: #fff; }
-        .message.deleted { font-style: italic; color: #777; background-color: #f0f0f0 !important; }
-        
-        .media-img { width: 100%; border-radius: 5px; display: block; }
         .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 11px; color: #667781; margin-top: 2px; float: right; }
-        .msg-tick { font-size: 14px; margin-left: 3px; color: #53bdeb; }
-
+        
         .wa-input-area { flex-shrink: 0; background: #fff; padding: 5px 10px; display: flex; align-items: center; z-index: 20; min-height: 60px; }
         .wa-input-field { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; outline: none; font-size: 15px; background: #fff; margin: 0 5px; border: 1px solid #ddd; }
-        .btn-icon { background: transparent; border: none; font-size: 24px; color: #54656f; padding: 0 8px; }
         .btn-send { background: #008069; border: none; border-radius: 50%; width: 45px; height: 45px; color: white; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
-        #emoji-drawer { height: 0; overflow: hidden; transition: height 0.3s; background: #eee; z-index: 15; display: grid; grid-template-columns: repeat(8, 1fr); padding: 0; overflow-y: auto; }
-        #emoji-drawer.open { height: 200px; padding: 10px; }
-        .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
 
-        .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* JITSI */
-        #jitsi-container { width: 100%; height: 100%; }
-        /* Tombol Matikan Kecil di Pojok, biar gak ganggu view */
-        .close-call-btn { position: absolute; bottom: 20px; width: 60px; height: 60px; border-radius: 50%; background: red; color: white; border: none; font-size: 24px; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        /* --- NATIVE WEBRTC VIDEO UI --- */
+        #video-call-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 99999; flex-direction: column;
+        }
 
-        #viewer-img { max-width: 100%; max-height: 80%; }
-        .close-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; }
+        /* Video Lawan (Full Screen) */
+        #remoteVideo {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        /* Video Kita (Kecil di Pojok) */
+        #localVideo {
+            position: absolute; bottom: 100px; right: 20px;
+            width: 100px; height: 150px; background: #333;
+            border-radius: 10px; object-fit: cover;
+            border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transform: scaleX(-1); /* Efek Cermin */
+        }
+
+        .call-controls {
+            position: absolute; bottom: 20px; width: 100%;
+            display: flex; justify-content: center; gap: 20px;
+        }
+
+        .btn-hangup {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: red; color: white; border: none;
+            font-size: 24px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .status-pill {
+            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.5); color: white; padding: 5px 15px;
+            border-radius: 20px; font-size: 12px;
+        }
 
         #landing-page { z-index: 50; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        #delete-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
     </style>
 </head>
 <body>
-    <input type="file" id="file-input" hidden accept="image/*">
-    
-    <div id="call-overlay" class="full-overlay">
-        <div id="jitsi-container"></div> 
-        <button class="close-call-btn" onclick="endEmbeddedCall()"><i class="bi bi-telephone-x-fill"></i></button>
-    </div>
 
-    <div id="image-viewer" class="full-overlay">
-        <span class="close-btn" onclick="closeViewer()">&times;</span>
-        <img id="viewer-img" src="">
+    <div id="video-call-overlay">
+        <div class="status-pill" id="call-status">Menghubungkan...</div>
+        <video id="remoteVideo" autoplay playsinline></video>
+        <video id="localVideo" autoplay playsinline muted></video> <div class="call-controls">
+            <button class="btn-hangup" onclick="hangupCall()"><i class="bi bi-telephone-x-fill"></i></button>
+        </div>
     </div>
 
     <div id="app-frame">
@@ -71,51 +88,34 @@
         
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
-            <h4>Direct Connect WA</h4>
-            <p class="text-muted small mb-4">Fitur: Auto-Answer Call</p>
+            <h4>Native Video Call</h4>
+            <p class="text-muted small mb-4">Tanpa Pihak Ketiga (Peer-to-Peer)</p>
             <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
         </div>
 
         <div id="header-area" class="wa-header" style="display:none;">
-            <i class="bi bi-arrow-left me-2" onclick="window.location.reload()"></i>
             <div class="wa-avatar"><i class="bi bi-person-fill"></i></div>
             <div style="flex:1;">
                 <div style="font-weight: 600;">Secret User</div>
                 <div style="font-size: 11px; opacity: 0.8;" id="room-id-display">Online</div>
             </div>
             <div class="header-actions">
-                <i class="bi bi-camera-video-fill" onclick="forceCall('video')"></i>
-                <i class="bi bi-telephone-fill" onclick="forceCall('voice')"></i>
-                <i class="bi bi-three-dots-vertical" onclick="copyLink()"></i>
+                <i class="bi bi-camera-video-fill" onclick="startCall()"></i>
+                <i class="bi bi-clipboard" onclick="copyLink()"></i>
             </div>
         </div>
 
         <div id="chat-container" style="display:none;"></div>
 
-        <div id="input-area-wrapper" style="display:none; flex-direction: column; z-index: 20;">
-            <div class="wa-input-area">
-                <button class="btn-icon" onclick="toggleEmoji()"><i class="bi bi-emoji-smile"></i></button>
-                <button class="btn-icon" onclick="triggerFile()"><i class="bi bi-camera-fill"></i></button>
-                <input type="text" id="message-input" class="wa-input-field" placeholder="Ketik pesan" autocomplete="off">
-                <button class="btn-send" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
-            </div>
-            <div id="emoji-drawer"></div>
-        </div>
-    </div>
-
-    <div id="delete-modal">
-        <div class="modal-content text-center">
-            <h5>Hapus Pesan?</h5>
-            <div class="d-flex gap-2 justify-content-center mt-3">
-                <button class="btn btn-secondary btn-sm" onclick="closeModal()">Batal</button>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
-            </div>
+        <div class="wa-input-area" id="input-area-wrapper" style="display:none;">
+            <input type="text" id="message-input" class="wa-input-field" placeholder="Ketik pesan">
+            <button class="btn-send" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, onSnapshotsInSync, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5o4FTyWTFIbdvpO2-vfN2_Mf750GtiXM",
@@ -132,10 +132,19 @@
         let myId = localStorage.getItem('wa_uid') || 'user_' + Math.random().toString(36).substr(2,9);
         localStorage.setItem('wa_uid', myId);
         const roomId = new URLSearchParams(window.location.search).get('room');
-        let selectedMsgId = null;
-        let jitsiApi = null;
-        let lastCallTime = 0;
+        
+        // --- WEBRTC VARIABLES ---
+        const servers = {
+            iceServers: [
+                { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] } // Server STUN Gratis Google
+            ],
+            iceCandidatePoolSize: 10,
+        };
+        let pc = null;
+        let localStream = null;
+        let remoteStream = null;
 
+        // --- INIT ---
         if (roomId) {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('header-area').style.display = 'flex';
@@ -143,133 +152,197 @@
             document.getElementById('input-area-wrapper').style.display = 'flex';
             document.getElementById('room-id-display').innerText = "ID: " + roomId;
 
+            // LISTEN CHAT
             const q = query(collection(db, "rooms", roomId, "messages"), orderBy("createdAt", "asc"));
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-container');
-                container.innerHTML = '<div class="text-center my-3"><span style="background:#ffeecd; font-size:10px; padding:5px; border-radius:5px;">🔒 Pesan terenkripsi</span></div>';
-                
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
+                container.innerHTML = ''; 
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
                     const isMe = data.senderId === myId;
-                    const msgId = docSnap.id;
-                    const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
-                    
-                    // --- LOGIC AUTO-ANSWER (FORCED) ---
-                    // Jika ada trigger call dan bukan dari saya
-                    if (data.type === 'force_call' && !isMe) {
-                        const msgTime = data.createdAt ? data.createdAt.toMillis() : 0;
-                        const now = Date.now();
-                        // Jika pesan ini baru (max 15 detik) DAN kita belum join call
-                        if (now - msgTime < 15000 && msgTime > lastCallTime && !jitsiApi) {
-                            lastCallTime = msgTime;
-                            console.log("Forced Call Detected! Auto Joining...");
-                            joinEmbeddedCall(data.text); // LANGSUNG JOIN TANPA TANYA
-                        }
-                    }
-
                     const div = document.createElement('div');
-                    if (data.deleted) {
-                        div.className = `message ${isMe ? 'me' : 'them'} deleted`; div.innerHTML = `<i class="bi bi-slash-circle"></i> Pesan dihapus`;
-                    } else {
-                        div.className = `message ${isMe ? 'me' : 'them'}`;
-                        if (data.type === 'force_call') {
-                            // Tampilan di chat cuma info kecil bahwa call dimulai
-                            div.innerHTML = `<small style="font-style:italic; color:#555"><i class="bi bi-telephone-outbound"></i> Memulai Panggilan ${data.text}...</small>`;
-                        } else {
-                            let content = data.text;
-                            if (data.image64) content = `<img src="${data.image64}" class="media-img" id="img-${msgId}"> ${data.text}`;
-                            div.innerHTML = `${content} <div class="msg-meta">${time} ${isMe ? '<i class="bi bi-check-all msg-tick"></i>' : ''}</div>`;
-                            if(data.image64) setTimeout(() => { const img = document.getElementById(`img-${msgId}`); if(img) img.onclick = (e) => { e.stopPropagation(); openViewer(data.image64); }; }, 100);
-                        }
-                        if(isMe && !data.deleted) div.onclick = () => openDeleteModal(msgId);
-                    }
+                    div.className = `message ${isMe ? 'me' : 'them'}`;
+                    div.innerHTML = `${data.text}`;
                     container.appendChild(div);
                 });
-                setTimeout(()=> container.scrollTop = container.scrollHeight, 100);
+                container.scrollTop = container.scrollHeight;
+            });
+
+            // LISTEN CALL SIGNALS (SIGNALING)
+            // Kita pakai sub-collection "calls" di dalam room
+            const callDocRef = doc(db, "rooms", roomId, "calls", "active_call");
+            
+            onSnapshot(callDocRef, async (snapshot) => {
+                const data = snapshot.data();
+                // Jika ada offer (Panggilan Masuk) DAN kita belum konek
+                if (data && data.offer && !pc && data.callerId !== myId) {
+                    console.log("Menerima Panggilan...");
+                    await answerCall(callDocRef, data);
+                }
+                // Jika panggilan dimatikan
+                if (!data) {
+                    hangupLocal();
+                }
             });
         }
 
-        // --- TRIGGER CALL ---
-        window.forceCall = async (type) => {
-            // Langsung buka di HP kita
-            joinEmbeddedCall(type);
+        // --- FUNGSI MULAI CALL (CALLER) ---
+        window.startCall = async () => {
+            const callDocRef = doc(db, "rooms", roomId, "calls", "active_call");
             
-            // Kirim sinyal 'force_call' ke database biar HP teman juga ngebuka sendiri
-            await addDoc(collection(db, "rooms", roomId, "messages"), {
-                text: type, type: 'force_call', senderId: myId, createdAt: serverTimestamp(), deleted: false
+            // 1. Setup Local Video
+            await setupLocalMedia();
+            document.getElementById('video-call-overlay').style.display = 'flex';
+            document.getElementById('call-status').innerText = "Memanggil...";
+
+            // 2. Buat PeerConnection
+            pc = new RTCPeerConnection(servers);
+            
+            // 3. Masukkan stream kamera ke PC
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            // 4. Ambil stream lawan (Remote)
+            pc.ontrack = (event) => {
+                const remoteVideo = document.getElementById('remoteVideo');
+                event.streams[0].getTracks().forEach(track => remoteVideo.srcObject = event.streams[0]);
+                document.getElementById('call-status').innerText = "Terhubung";
+            };
+
+            // 5. Kumpulkan Kandidat Jaringan (ICE Candidates)
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    // Simpan kandidat ke Firestore biar lawan tau cara connect
+                    const candidatesCol = collection(db, "rooms", roomId, "calls", "active_call", "callerCandidates");
+                    addDoc(candidatesCol, event.candidate.toJSON());
+                }
+            };
+
+            // 6. Buat OFFER (Undangan)
+            const offerDescription = await pc.createOffer();
+            await pc.setLocalDescription(offerDescription);
+
+            const offer = {
+                sdp: offerDescription.sdp,
+                type: offerDescription.type,
+            };
+
+            // 7. Simpan Offer ke Firestore
+            await setDoc(callDocRef, { offer, callerId: myId });
+
+            // 8. Dengarkan Jawaban (Answer) dari lawan
+            onSnapshot(callDocRef, (snapshot) => {
+                const data = snapshot.data();
+                if (!pc.currentRemoteDescription && data?.answer) {
+                    const answerDescription = new RTCSessionDescription(data.answer);
+                    pc.setRemoteDescription(answerDescription);
+                }
+            });
+
+            // 9. Dengarkan Kandidat Jaringan Lawan
+            const calleeCandidates = collection(db, "rooms", roomId, "calls", "active_call", "calleeCandidates");
+            onSnapshot(calleeCandidates, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const candidate = new RTCIceCandidate(change.doc.data());
+                        pc.addIceCandidate(candidate);
+                    }
+                });
             });
         };
 
-        // --- AUTO JOIN LOGIC ---
-        window.joinEmbeddedCall = (callType) => {
-            const config = {
-                startWithAudioMuted: false,
-                startWithVideoMuted: callType === 'voice',
-                prejoinPageEnabled: false, // MATIKAN PREJOIN
-                disableDeepLinking: true,
-                notifications: [] // Matikan notifikasi aneh2
-            };
-            const options = {
-                roomName: "SecretChat-" + roomId, width: "100%", height: "100%",
-                parentNode: document.querySelector('#jitsi-container'),
-                configOverwrite: config,
-                interfaceConfigOverwrite: {
-                    TOOLBAR_BUTTONS: ['microphone', 'camera', 'hangup', 'tileview'], // Tombol minimalis
-                    filmStripOnly: false,
-                    SHOW_JITSI_WATERMARK: false
-                },
-                userInfo: { displayName: "Secret User" }
-            };
-            
-            // Tampilkan Layar
-            document.getElementById('call-overlay').style.display = 'flex';
-            
-            // Start Jitsi
-            jitsiApi = new JitsiMeetExternalAPI("meet.jit.si", options);
-            jitsiApi.addEventListeners({ videoConferenceLeft: function () { endEmbeddedCall(); } });
-        };
+        // --- FUNGSI JAWAB CALL (CALLEE) ---
+        async function answerCall(callDocRef, callData) {
+            // 1. Setup Local Video
+            await setupLocalMedia();
+            document.getElementById('video-call-overlay').style.display = 'flex';
+            document.getElementById('call-status').innerText = "Menghubungkan...";
 
-        window.endEmbeddedCall = () => {
-            if(jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
-            document.getElementById('call-overlay').style.display = 'none';
-        };
+            pc = new RTCPeerConnection(servers);
 
-        // --- CHAT & UTILS ---
-        window.sendMessage = async (imgBase64 = null) => {
-            const input = document.getElementById('message-input'); const text = input.value.trim();
-            document.getElementById('emoji-drawer').classList.remove('open');
-            if ((text || imgBase64) && roomId) {
-                input.value = "";
-                await addDoc(collection(db, "rooms", roomId, "messages"), {
-                    text: text, image64: imgBase64, type: 'chat', senderId: myId, createdAt: serverTimestamp(), deleted: false
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    const candidatesCol = collection(db, "rooms", roomId, "calls", "active_call", "calleeCandidates");
+                    addDoc(candidatesCol, event.candidate.toJSON());
+                }
+            };
+
+            pc.ontrack = (event) => {
+                const remoteVideo = document.getElementById('remoteVideo');
+                event.streams[0].getTracks().forEach(track => remoteVideo.srcObject = event.streams[0]);
+                document.getElementById('call-status').innerText = "Terhubung";
+            };
+
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            // 2. Set Remote Description (Offer dari penelpon)
+            const offerDescription = callData.offer;
+            await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+
+            // 3. Buat ANSWER
+            const answerDescription = await pc.createAnswer();
+            await pc.setLocalDescription(answerDescription);
+
+            const answer = {
+                type: answerDescription.type,
+                sdp: answerDescription.sdp,
+            };
+
+            // 4. Kirim Jawaban ke Firestore
+            await updateDoc(callDocRef, { answer });
+
+            // 5. Dengarkan Kandidat Penelpon
+            const callerCandidates = collection(db, "rooms", roomId, "calls", "active_call", "callerCandidates");
+            onSnapshot(callerCandidates, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const candidate = new RTCIceCandidate(change.doc.data());
+                        pc.addIceCandidate(candidate);
+                    }
                 });
+            });
+        }
+
+        // --- MEDIA HELPER ---
+        async function setupLocalMedia() {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const localVideo = document.getElementById('localVideo');
+            localVideo.srcObject = localStream;
+            remoteStream = new MediaStream();
+        }
+
+        // --- HANGUP ---
+        window.hangupCall = async () => {
+            // Hapus dokumen call di Firestore (sinyal untuk lawan mati)
+            const callDocRef = doc(db, "rooms", roomId, "calls", "active_call");
+            await deleteDoc(callDocRef);
+            hangupLocal();
+        };
+
+        function hangupLocal() {
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            document.getElementById('video-call-overlay').style.display = 'none';
+        }
+
+        // --- UTILS ---
+        window.sendMessage = async () => {
+            const input = document.getElementById('message-input');
+            if (input.value.trim() && roomId) {
+                await addDoc(collection(db, "rooms", roomId, "messages"), {
+                    text: input.value, senderId: myId, createdAt: serverTimestamp()
+                });
+                input.value = "";
             }
         };
-        window.triggerFile = () => document.getElementById('file-input').click();
-        document.getElementById('file-input').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const r = new FileReader(); r.onload = (ev) => {
-                    const img = new Image(); img.onload = () => {
-                        const cvs = document.createElement('canvas'); const ctx = cvs.getContext("2d");
-                        cvs.width = 600; cvs.height = img.height * (600/img.width);
-                        ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
-                        sendMessage(cvs.toDataURL("image/jpeg", 0.7));
-                    }; img.src = ev.target.result;
-                }; r.readAsDataURL(file);
-            }
-        });
-        document.getElementById('message-input').addEventListener("keypress", (e) => { if (e.key === "Enter") window.sendMessage(); });
-        window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
-        window.openDeleteModal = (id) => { selectedMsgId = id; document.getElementById('delete-modal').style.display = 'flex'; };
-        window.closeModal = () => { document.getElementById('delete-modal').style.display = 'none'; selectedMsgId = null; };
-        window.confirmDelete = async () => { if(selectedMsgId) await updateDoc(doc(db, "rooms", roomId, "messages", selectedMsgId), {deleted:true, text:"", image64:null}); closeModal(); };
+        
         window.createRoom = () => window.location.search = `?room=${Math.random().toString(36).substr(2,9)}`;
         window.copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Link tersalin!"); };
-        window.openViewer = (src) => { document.getElementById('viewer-img').src = src; document.getElementById('image-viewer').style.display = 'flex'; };
-        window.closeViewer = () => document.getElementById('image-viewer').style.display = 'none';
-        const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍"];
-        emojis.forEach(e => { const s = document.createElement('span'); s.className='emoji-btn'; s.innerText=e; s.onclick=()=>{document.getElementById('message-input').value+=e}; document.getElementById('emoji-drawer').appendChild(s); });
     </script>
 </body>
 </html>
