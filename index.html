@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WhatsApp Pro</title>
+    <title>WA Pro V4</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -225,6 +225,7 @@
         let activeChatId = null;
         let activeChatType = 'private'; 
         let activePartnerId = null;
+        let confirmResult = null;
         let chatToDelete = null; // ID Chat yang mau dihapus
         
         auth.onAuthStateChanged(async (user) => {
@@ -457,6 +458,11 @@
                 }
             }; r.readAsDataURL(f);
         });
+        document.getElementById('msg-input').addEventListener("keypress", (e)=>{ if(e.key==="Enter") sendMsg(); });
+        window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
+        
+        const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍","👻","💩"];
+        emojis.forEach(e => { const s = document.createElement('span'); s.className='emoji-btn'; s.innerText=e; s.onclick=()=>{document.getElementById('msg-input').value+=e}; document.getElementById('emoji-drawer').appendChild(s); });
 
         // --- CALL LOGIC ---
         let pc, localStream, callDocRef, incomingData;
@@ -465,7 +471,7 @@
 
         function listenIncomingCalls() {
             const q = query(collection(db, "calls"), where("calleeId", "==", currentUser.uid), where("status", "==", "offering"));
-            onSnapshot(q, (snap) => {
+            onSnapshot(q, async (snap) => {
                 snap.docChanges().forEach(async (change) => {
                     if(change.type === 'added') {
                         const d = change.doc.data();
@@ -483,6 +489,7 @@
             document.getElementById('active-overlay').style.display = 'flex';
             await initPC(); await getStream(type);
             const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
+            
             callDocRef = await addDoc(collection(db, "calls"), { callerId: currentUser.uid, calleeId: activePartnerId, offer: { type: offer.type, sdp: offer.sdp }, type, status: 'offering' });
             await addDoc(collection(db, "call_history"), { callerId: currentUser.uid, calleeId: activePartnerId, type, timestamp: serverTimestamp(), status: 'dialed', participants: [currentUser.uid, activePartnerId] });
             onSnapshot(doc(db, "calls", callDocRef.id), (s) => { const d = s.data(); if(!d) { cleanupCall(); return; } if(d.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(d.answer)); if(d.status === 'rejected') { alert("Ditolak"); hangup(); } });
@@ -537,10 +544,6 @@
 
         window.toggleMic = () => { localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled; document.getElementById('btn-mic').classList.toggle('off'); };
         window.toggleCam = () => { localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled; document.getElementById('btn-cam').classList.toggle('off'); };
-        window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
-        
-        const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍","👻","💩"];
-        emojis.forEach(e => { const s = document.createElement('span'); s.className='emoji-btn'; s.innerText=e; s.onclick=()=>{document.getElementById('msg-input').value+=e}; document.getElementById('emoji-drawer').appendChild(s); });
     </script>
 </body>
 </html>
