@@ -3,39 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WA Pro Clone</title>
+    <title>WA Pro Modern</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
-        :root { --wa-primary: #008069; --wa-bg: #efeae2; --wa-light: #fff; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #d1d7db; font-family: Helvetica, Arial, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
+        :root { 
+            --wa-green: #075e54; 
+            --wa-teal: #128c7e;
+            --wa-light-green: #25d366;
+            --wa-accent: #008069; /* Warna Ikon/Header Text */
+            --wa-bg: #efeae2; 
+            --wa-white: #ffffff;
+            --wa-gray: #f0f2f5;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: Helvetica, Arial, sans-serif; }
+        body { background-color: #d1d7db; margin: 0; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
         
         #app-frame { width: 100%; height: 100%; background-color: #fff; display: flex; flex-direction: column; position: relative; max-width: 450px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         
-        /* LOGIN */
+        /* --- LOGIN SCREEN --- */
         .full-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .login-input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; font-size: 16px; }
-        .btn-primary-wa { width: 100%; background: var(--wa-primary); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; }
+        .btn-primary-wa { width: 100%; background: var(--wa-accent); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; }
 
-        /* HOME */
+        /* --- HOME SCREEN (MODERN STYLE) --- */
         #home-screen { display: none; flex-direction: column; height: 100%; }
-        .home-header { background: var(--wa-primary); color: white; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index: 10; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .search-bar { width: 100%; padding: 8px 15px; border-radius: 8px; border: none; outline: none; font-size: 14px; }
         
-        .chat-list { flex: 1; overflow-y: auto; background: white; }
-        .chat-item { display: flex; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; align-items: center; user-select: none; }
-        .chat-item:active { background: #e0e0e0; }
-        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; color: #555; font-size: 24px; margin-right: 15px; flex-shrink: 0; }
-        .fab-new { position: absolute; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--wa-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
+        /* Header Putih ala WA Baru */
+        .home-header { 
+            background: var(--wa-white); 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .wa-title { color: var(--wa-accent); font-weight: bold; font-size: 22px; }
+        .header-icons i { font-size: 20px; margin-left: 20px; color: #333; cursor: pointer; }
 
-        /* CHAT ROOM */
+        /* Chat List */
+        .chat-list { flex: 1; overflow-y: auto; background: white; padding-bottom: 80px; } /* Padding bawah untuk navbar */
+        .chat-item { display: flex; padding: 12px 15px; cursor: pointer; align-items: center; }
+        .chat-item:active { background: #f5f5f5; }
+        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; margin-right: 15px; flex-shrink: 0; overflow: hidden; }
+        .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .chat-info { flex: 1; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; min-width: 0; }
+        .chat-top { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .chat-name { font-weight: 600; font-size: 16px; color: #111; }
+        .chat-time { font-size: 11px; color: 
+            #008069; /* Hijau jika baru */
+            font-weight: 500;
+        }
+        .chat-preview { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .unread-badge { background: #25d366; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; float: right; margin-top: 2px; font-weight: bold; }
+
+        /* Floating Action Button (FAB) */
+        .fab-new { 
+            position: absolute; bottom: 90px; right: 20px; 
+            width: 55px; height: 55px; 
+            background: var(--wa-accent); /* Kotak hitam melengkung di gambar */
+            border-radius: 16px; /* Rounded square */
+            display: flex; align-items: center; justify-content: center; 
+            color: white; font-size: 24px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; 
+            z-index: 100;
+        }
+
+        /* Bottom Navbar */
+        .bottom-nav {
+            display: flex; justify-content: space-around; align-items: center;
+            background: white; border-top: 1px solid #ddd; padding: 10px 0;
+            position: absolute; bottom: 0; width: 100%; height: 70px;
+        }
+        .nav-item { text-align: center; color: #555; font-size: 12px; flex: 1; cursor: pointer; }
+        .nav-item i { display: block; font-size: 20px; margin-bottom: 2px; border-radius: 15px; padding: 3px 15px;}
+        .nav-item.active { color: #111; font-weight: bold; }
+        .nav-item.active i { background: #cbf5e6; color: #003d2d; } /* Pill hijau */
+
+        /* --- CHAT ROOM --- */
         #chat-screen { display: none; flex-direction: column; height: 100%; background: var(--wa-bg); position: relative; z-index: 50; }
-        .chat-header { background: var(--wa-primary); color: white; padding: 10px; display: flex; align-items: center; z-index: 10; }
-        .input-area { background: #f0f2f5; padding: 5px 10px; display: flex; align-items: center; z-index: 10; min-height: 60px; }
-        .input-field { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; font-size: 15px; margin: 0 5px; outline: none; }
+        .chat-header { background: var(--wa-accent); color: white; padding: 10px; display: flex; align-items: center; z-index: 10; }
+        .input-area { background: #fff; padding: 5px 10px; display: flex; align-items: center; z-index: 10; min-height: 60px; }
+        .input-field { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; font-size: 15px; margin: 0 5px; outline: none; background: #f0f2f5; }
         
         #messages-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.9; }
         .message { max-width: 75%; padding: 6px 8px; margin-bottom: 4px; border-radius: 7.5px; font-size: 14.2px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); display: flex; flex-wrap: wrap; background: white; }
@@ -44,7 +95,7 @@
         .msg-meta { margin-left: auto; font-size: 10px; color: #667; display: flex; align-items: center; padding-top: 5px; padding-left: 5px; }
         .media-content { width: 100%; border-radius: 5px; margin-bottom: 5px; }
 
-        /* CALL UI */
+        /* --- CALL UI (FULL SCREEN) --- */
         .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; flex-direction: column; align-items: center; justify-content: center; }
         #incoming-overlay { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.pinimg.com/originals/48/28/e0/4828e05a7069d8f9502b90ba4d338981.jpg'); background-size: cover; padding-top: 80px; justify-content: flex-start; color: white; }
         
@@ -54,7 +105,13 @@
         .active-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; z-index: 100001; }
         .ctrl-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 20px; }
         .ctrl-btn.hangup { background: red; width: 60px; height: 60px; font-size: 24px; }
-        
+        .ctrl-btn.off { background: white; color: black; }
+
+        /* EMOJI */
+        #emoji-drawer { height: 0; overflow: hidden; transition: height 0.3s; background: #eee; z-index: 15; display: grid; grid-template-columns: repeat(8, 1fr); padding: 0; overflow-y: auto; }
+        #emoji-drawer.open { height: 200px; padding: 10px; }
+        .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
+
         /* CONFIRM MODAL */
         #confirm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; text-align: center; }
@@ -65,7 +122,7 @@
     <audio id="ringtone" loop src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Bell_ring_effect.ogg"></audio>
 
     <div id="login-screen" class="full-overlay">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:80px; margin-bottom:20px;">
         <h4>Verifikasi Nomor</h4>
         <div id="phone-step" style="width:100%">
             <p class="text-muted small">Contoh: 08123456789</p>
@@ -89,43 +146,71 @@
     <div id="app-frame" style="display:none;">
         <div id="home-screen">
             <div class="home-header">
-                <div class="header-top">
-                    <span style="font-weight:bold; font-size:20px;">WhatsApp</span>
-                    <i class="bi bi-three-dots-vertical" onclick="logout()" style="cursor:pointer;"></i>
+                <span class="wa-title">WhatsApp</span>
+                <div class="header-icons">
+                    <i class="bi bi-camera"></i>
+                    <i class="bi bi-search" onclick="document.getElementById('search-bar').focus()"></i>
+                    <i class="bi bi-three-dots-vertical" onclick="logout()"></i>
                 </div>
-                <input type="text" id="search-input" class="search-bar" placeholder="Cari nama..." onkeyup="filterChats()">
             </div>
-            
-            <div id="chat-list-container" class="chat-list"></div>
-            
-            <div class="fab-new" onclick="promptNewChat()"><i class="bi bi-chat-text-fill"></i></div>
+            <div style="padding: 10px; background: white;">
+                <input type="text" id="search-bar" placeholder="Cari..." style="width:100%; padding:8px 15px; border-radius:20px; background:#f0f2f5; border:none; outline:none;" onkeyup="filterChats()">
+            </div>
+
+            <div id="chat-list-container" class="chat-list">
+                </div>
+
+            <div class="fab-new" onclick="promptNewChat()">
+                <i class="bi bi-plus-lg"></i>
+            </div>
+
+            <div class="bottom-nav">
+                <div class="nav-item active">
+                    <i class="bi bi-chat-text-fill"></i> Chat
+                </div>
+                <div class="nav-item">
+                    <i class="bi bi-telephone"></i> Panggilan
+                </div>
+                <div class="nav-item">
+                    <i class="bi bi-people"></i> Komunitas
+                </div>
+                <div class="nav-item">
+                    <i class="bi bi-shop"></i> Fitur
+                </div>
+            </div>
         </div>
 
         <div id="chat-screen">
             <div class="chat-header">
-                <i class="bi bi-arrow-left" onclick="closeChat()" style="font-size:20px; margin-right:10px; cursor:pointer;"></i>
-                <div style="width:35px; height:35px; background:#ccc; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:10px;"><i class="bi bi-person-fill"></i></div>
+                <i class="bi bi-arrow-left" onclick="closeChat()" style="font-size:24px; margin-right:10px; cursor:pointer;"></i>
+                <div style="width:35px; height:35px; background:#ccc; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:10px; overflow:hidden;">
+                    <i class="bi bi-person-fill"></i>
+                </div>
                 <div style="flex:1;">
-                    <div style="font-weight:600;" id="chat-title-name">User</div>
+                    <div style="font-weight:600; font-size:16px;" id="chat-title-name">User</div>
                 </div>
                 <div style="display:flex; gap:20px;">
-                    <i class="bi bi-camera-video-fill" onclick="startCall('video')" style="font-size:20px; cursor:pointer;"></i>
+                    <i class="bi bi-camera-video-fill" onclick="startCall('video')" style="font-size:22px; cursor:pointer;"></i>
                     <i class="bi bi-telephone-fill" onclick="startCall('voice')" style="font-size:20px; cursor:pointer;"></i>
                 </div>
             </div>
             <div id="messages-area"></div>
             <div class="input-area">
-                <button class="btn-icon" onclick="document.getElementById('file-input').click()"><i class="bi bi-paperclip" style="transform: rotate(45deg);"></i></button>
+                <i class="bi bi-emoji-smile" style="font-size:24px; color:#54656f; margin-right:10px;" onclick="toggleEmoji()"></i>
+                <i class="bi bi-paperclip" style="font-size:24px; color:#54656f; margin-right:10px; transform:rotate(45deg);" onclick="document.getElementById('file-input').click()"></i>
                 <input type="text" id="msg-input" class="input-field" placeholder="Ketik pesan" autocomplete="off">
-                <button class="btn-icon" style="background:var(--wa-primary); color:white; border-radius:50%; width:40px; height:40px;" onclick="sendMsg()"><i class="bi bi-send-fill"></i></button>
+                <div style="background:#008069; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; cursor:pointer;" onclick="sendMsg()">
+                    <i class="bi bi-send-fill"></i>
+                </div>
             </div>
+            <div id="emoji-drawer"></div>
         </div>
     </div>
 
     <div id="incoming-overlay" class="call-overlay">
         <div style="width:120px; height:120px; background:#ccc; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:50px; margin-bottom:20px;"><i class="bi bi-person-fill"></i></div>
-        <h2 id="inc-caller-name">...</h2>
-        <p id="inc-type">WhatsApp Call...</p>
+        <h2 id="inc-caller-name" style="font-weight:bold;">...</h2>
+        <p id="inc-type" style="opacity:0.8;">WhatsApp Call...</p>
         <div style="position:absolute; bottom:50px; width:100%; display:flex; justify-content:space-around;">
             <button onclick="rejectCall()" style="width:65px; height:65px; border-radius:50%; background:#d50000; color:white; border:none; font-size:28px;"><i class="bi bi-telephone-x-fill"></i></button>
             <button onclick="answerCall()" style="width:65px; height:65px; border-radius:50%; background:#00c853; color:white; border:none; font-size:28px;"><i class="bi bi-telephone-fill"></i></button>
@@ -146,7 +231,7 @@
     <div id="confirm-modal">
         <div class="modal-box">
             <h5>Hapus Chat?</h5>
-            <p class="small text-muted">Seluruh riwayat pesan dengan pengguna ini akan dihapus.</p>
+            <p class="small text-muted">Seluruh riwayat pesan akan dihapus.</p>
             <div class="d-flex gap-2 justify-content-center mt-3">
                 <button class="btn btn-secondary w-50" onclick="document.getElementById('confirm-modal').style.display='none'">Batal</button>
                 <button class="btn btn-danger w-50" onclick="executeDeleteChat()">Hapus</button>
@@ -178,7 +263,7 @@
         let confirmResult = null;
         let chatToDelete = null;
 
-        // --- AUTH & PHONE FORMAT ---
+        // --- AUTH ---
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
@@ -192,7 +277,6 @@
             }
         });
 
-        // Format 08 -> +628
         function formatPhone(num) {
             if(num.startsWith('08')) return '+62' + num.substring(1);
             return num;
@@ -223,7 +307,7 @@
 
         window.logout = () => signOut(auth).then(()=>location.reload());
 
-        // --- HOME SCREEN & SEARCH ---
+        // --- HOME & CHAT LIST ---
         function showHomeScreen() {
             document.getElementById('app-frame').style.display = 'flex';
             document.getElementById('home-screen').style.display = 'flex';
@@ -245,19 +329,28 @@
                     
                     const item = document.createElement('div');
                     item.className = 'chat-item';
-                    item.setAttribute('data-name', name.toLowerCase()); // Untuk Search
+                    item.setAttribute('data-name', name.toLowerCase());
+                    
+                    // Format waktu (Jam saja)
+                    const timeStr = data.lastUpdated ? data.lastUpdated.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+                    
                     item.innerHTML = `
-                        <div class="chat-avatar"><i class="bi bi-person-fill"></i></div>
-                        <div style="flex:1">
-                            <div style="font-weight:bold">${name}</div>
-                            <div style="font-size:13px; color:#666">${data.lastMessage || ''}</div>
+                        <div class="chat-avatar">
+                            ${name.charAt(0).toUpperCase()}
                         </div>
-                        <div style="font-size:11px; color:#999">${data.lastUpdated ? data.lastUpdated.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+                        <div class="chat-info" style="width:100%;">
+                            <div class="chat-top">
+                                <span class="chat-name">${name}</span>
+                                <span class="chat-time">${timeStr}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span class="chat-preview">${data.lastMessage || ''}</span>
+                            </div>
+                        </div>
                     `;
-                    // Klik untuk buka chat
                     item.onclick = () => openChat(d.id, partnerId, name);
                     
-                    // Long Press untuk Hapus
+                    // Long Press Hapus
                     let timer;
                     const startPress = () => { timer = setTimeout(() => { chatToDelete = d.id; document.getElementById('confirm-modal').style.display='flex'; }, 800); };
                     const endPress = () => clearTimeout(timer);
@@ -269,9 +362,8 @@
             });
         }
 
-        // Fitur Pencarian
         window.filterChats = () => {
-            const query = document.getElementById('search-input').value.toLowerCase();
+            const query = document.getElementById('search-bar').value.toLowerCase();
             const items = document.querySelectorAll('.chat-item');
             items.forEach(item => {
                 const name = item.getAttribute('data-name');
@@ -279,7 +371,6 @@
             });
         };
 
-        // Hapus Chat
         window.executeDeleteChat = async () => {
             if(chatToDelete) {
                 await deleteDoc(doc(db, "chats", chatToDelete));
@@ -301,9 +392,8 @@
 
             const chatId = [currentUser.uid, target.uid].sort().join("_");
             const chatRef = doc(db, "chats", chatId);
-            const exists = (await getDoc(chatRef)).exists();
             
-            if(!exists) {
+            if(!(await getDoc(chatRef)).exists()) {
                 await setDoc(chatRef, { participants: [currentUser.uid, target.uid], lastMessage: "", lastUpdated: serverTimestamp() });
             }
             openChat(chatId, target.uid, target.displayName);
@@ -332,7 +422,7 @@
                     if(msg.media) {
                         content = (msg.type === 'video') ? `<video src="${msg.media}" controls class="media-content"></video> ${msg.text}` : `<img src="${msg.media}" class="media-content"> ${msg.text}`;
                     }
-                    const tick = isMe ? `<i class="bi bi-check-all msg-tick ${msg.read?'read':''}"></i>` : '';
+                    const tick = isMe ? `<i class="bi bi-check-all msg-tick ${msg.read?'read':''}" style="margin-left:5px;"></i>` : '';
                     div.innerHTML = `${content} <div class="msg-meta">${msg.createdAt?.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||''} ${tick}</div>`;
                     area.appendChild(div);
                 });
@@ -349,6 +439,7 @@
         window.sendMsg = async (media=null, type='text') => {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
+            document.getElementById('emoji-drawer').classList.remove('open');
             if((text || media) && currentChatId) {
                 input.value = "";
                 await addDoc(collection(db, "chats", currentChatId, "messages"), {
@@ -360,25 +451,7 @@
             }
         };
 
-        document.getElementById('file-input').addEventListener('change', (e) => {
-            const f = e.target.files[0]; if(!f) return;
-            const r = new FileReader();
-            r.onload = (ev) => {
-                if(f.size > 3*1024*1024) return alert("Max 3MB");
-                if(f.type.startsWith('video')) sendMsg(ev.target.result, 'video');
-                else {
-                    const img = new Image(); img.onload = () => {
-                        const c = document.createElement('canvas'); const x = c.getContext('2d');
-                        const w = 600; const h = img.height * (w/img.width);
-                        c.width = w; c.height = h; x.drawImage(img,0,0,w,h);
-                        sendMsg(c.toDataURL('image/jpeg',0.7), 'image');
-                    }; img.src = ev.target.result;
-                }
-            }; r.readAsDataURL(f);
-        });
-        document.getElementById('msg-input').addEventListener("keypress", (e)=>{ if(e.key==="Enter") sendMsg(); });
-
-        // --- CALLING (WEBRTC) ---
+        // --- CALLING LOGIC ---
         let pc, localStream, callDocRef, incomingData;
         const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         let currentFacingMode = 'user';
@@ -392,7 +465,6 @@
                         incomingData = { id: change.doc.id, ...data };
                         const callerDoc = await getDoc(doc(db, "users", data.callerId));
                         document.getElementById('inc-caller-name').innerText = callerDoc.exists() ? callerDoc.data().displayName : "Unknown";
-                        document.getElementById('inc-type').innerText = `WhatsApp ${data.type} Call`;
                         document.getElementById('incoming-overlay').style.display = 'flex';
                         document.getElementById('ringtone').play().catch(()=>{});
                     }
@@ -411,7 +483,7 @@
 
             onSnapshot(callDocRef, (s) => {
                 const d = s.data();
-                if(!d) { cleanupCall(); return; } // Dokumen dihapus = Tutup
+                if(!d) { cleanupCall(); return; } 
                 if(d.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(d.answer));
                 if(d.status === 'rejected') { alert("Ditolak"); hangup(); }
             });
@@ -428,7 +500,6 @@
             const answer = await pc.createAnswer(); await pc.setLocalDescription(answer);
             await updateDoc(callDocRef, { answer: {type:answer.type, sdp:answer.sdp}, status: 'connected' });
             
-            // Listener untuk mematikan jika penelpon tutup
             onSnapshot(callDocRef, (s) => { if(!s.exists()) cleanupCall(); });
         };
 
@@ -439,7 +510,7 @@
         };
 
         window.hangup = async () => {
-            if(callDocRef) await deleteDoc(callDocRef); // Hapus dokumen -> Trigger listener di lawan -> cleanupCall()
+            if(callDocRef) await deleteDoc(callDocRef);
             cleanupCall();
         };
 
@@ -455,7 +526,6 @@
             pc = new RTCPeerConnection(servers);
             pc.onicecandidate = e => { if(e.candidate && callDocRef) addDoc(collection(callDocRef, "candidates"), e.candidate.toJSON()); };
             pc.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
-            
             setTimeout(() => {
                 if(!callDocRef) return;
                 const col = collection(callDocRef, "candidates");
@@ -475,26 +545,46 @@
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
             // Stop video lama
             localStream.getVideoTracks().forEach(t => t.stop());
-            
+            // Ambil stream baru
             const constraints = { audio: true, video: { facingMode: currentFacingMode } };
             const newStream = await navigator.mediaDevices.getUserMedia(constraints);
             
-            // Ganti track di PeerConnection
+            // Ganti tampilan lokal
+            document.getElementById('localVideo').srcObject = newStream;
+            
+            // Ganti track di PeerConnection agar lawan melihat kamera baru
             const videoTrack = newStream.getVideoTracks()[0];
             const sender = pc.getSenders().find(s => s.track.kind === 'video');
             if(sender) sender.replaceTrack(videoTrack);
             
-            // Update local view
-            document.getElementById('localVideo').srcObject = newStream;
-            
-            // Pindahkan audio track dari stream lama ke stream baru object (biar rapi)
-            const audioTrack = localStream.getAudioTracks()[0];
-            newStream.addTrack(audioTrack);
+            // Update referensi localStream (jangan lupa audio track lama juga dipindah atau diambil dari newStream jika constraints audio:true)
             localStream = newStream;
         };
 
-        window.toggleMic = () => { localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled; };
-        window.toggleCam = () => { localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled; };
+        window.toggleMic = () => { localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled; document.getElementById('btn-mic').classList.toggle('off'); };
+        window.toggleCam = () => { localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled; document.getElementById('btn-cam').classList.toggle('off'); };
+        
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                if(f.size > 3*1024*1024) return alert("Max 3MB");
+                if(f.type.startsWith('video')) sendMsg(ev.target.result, 'video');
+                else {
+                    const img = new Image(); img.onload = () => {
+                        const c = document.createElement('canvas'); const x = c.getContext('2d');
+                        const w = 600; const h = img.height * (w/img.width);
+                        c.width = w; c.height = h; x.drawImage(img,0,0,w,h);
+                        sendMsg(c.toDataURL('image/jpeg',0.7), 'image');
+                    }; img.src = ev.target.result;
+                }
+            }; r.readAsDataURL(f);
+        });
+        document.getElementById('msg-input').addEventListener("keypress", (e)=>{ if(e.key==="Enter") sendMsg(); });
+        window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
+        
+        const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍","👻","💩"];
+        emojis.forEach(e => { const s = document.createElement('span'); s.className='emoji-btn'; s.innerText=e; s.onclick=()=>{document.getElementById('msg-input').value+=e}; document.getElementById('emoji-drawer').appendChild(s); });
     </script>
 </body>
 </html>
