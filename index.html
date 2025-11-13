@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Private Chat</title>
+    <title>Private Chat Group</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -22,13 +22,40 @@
         .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #cfd8dc; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; overflow: hidden; }
         .header-actions i { font-size: 20px; margin-left: 18px; cursor: pointer; }
 
-        /* CHAT LIST */
+        /* CHAT LIST & BUBBLES */
         #chat-container { flex-grow: 1; overflow-y: auto; padding: 15px; z-index: 5; display: flex; flex-direction: column; }
-        .message { max-width: 80%; padding: 6px 9px 8px 9px; margin-bottom: 4px; border-radius: 7.5px; position: relative; font-size: 14.2px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); word-wrap: break-word; }
+        
+        .message { 
+            max-width: 80%; 
+            padding: 6px 8px 6px 9px; 
+            margin-bottom: 4px; 
+            border-radius: 7.5px; 
+            position: relative; 
+            font-size: 14.2px; 
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); 
+            word-wrap: break-word;
+            display: flex; /* Flexbox untuk layout konten + jam */
+            flex-wrap: wrap; /* Biar jam turun kalau teks panjang */
+            align-items: flex-end; /* Jam di bawah */
+        }
         .message.me { background-color: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
         .message.them { background-color: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; background: #fff; }
         
-        .msg-meta { display: flex; justify-content: flex-end; align-items: center; font-size: 11px; color: #667781; margin-top: 2px; float: right; }
+        .msg-text { flex: 1 1 auto; padding-right: 10px; min-width: 60px; } /* Area Teks */
+        
+        .msg-meta { 
+            display: flex; 
+            align-items: center; 
+            font-size: 11px; 
+            color: #667781; 
+            margin-left: auto; /* Dorong ke kanan */
+            height: 15px;
+            margin-bottom: -2px; /* Perbaikan posisi */
+        }
+        
+        .msg-tick { font-size: 14px; margin-left: 3px; color: #888; } /* Default abu-abu */
+        .msg-tick.read { color: #53bdeb; } /* Biru kalau dibaca */
+
         .media-content { width: 100%; border-radius: 5px; margin-bottom: 5px; display: block; }
 
         /* INPUT AREA */
@@ -62,12 +89,21 @@
         }
         #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
         #localVideo {
-            position: absolute; bottom: 120px; right: 20px; width: 100px; height: 150px;
+            position: absolute; bottom: 140px; right: 20px; width: 100px; height: 150px;
             background: #333; border-radius: 10px; object-fit: cover; border: 2px solid white;
-            transform: scaleX(-1); z-index: 100000;
+            transform: scaleX(-1); z-index: 100000; transition: all 0.3s;
         }
+        /* Kontrol Mute/Cam/Hangup */
+        .active-call-controls {
+            position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 100001;
+        }
+        .ctrl-btn {
+            width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 20px;
+            background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .ctrl-btn.off { background: white; color: black; } /* Style kalau dimatikan */
+        
         .hangup-btn {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             width: 60px; height: 60px; border-radius: 50%; background: red; color: white;
             border: none; font-size: 24px; display: flex; align-items: center; justify-content: center;
         }
@@ -86,11 +122,11 @@
 
     <div id="incoming-call-overlay">
         <div class="caller-img"><i class="bi bi-person-fill"></i></div>
-        <h2 id="caller-name">Chatting Group</h2>
+        <h2 id="caller-name">Group Call</h2>
         <p id="call-type-text">WhatsApp Video Call...</p>
         
         <div class="call-actions">
-            <button class="btn-action-call btn-reject" onclick="rejectCall()"><i class="bi bi-telephone-x-fill"></i></button>
+            <button class="btn-action-call btn-reject" onclick="rejectCallLocal()"><i class="bi bi-telephone-x-fill"></i></button>
             <button class="btn-action-call btn-accept" onclick="answerCall()"><i class="bi bi-telephone-fill"></i></button>
         </div>
     </div>
@@ -102,7 +138,11 @@
         <video id="remoteVideo" autoplay playsinline></video>
         <video id="localVideo" autoplay playsinline muted></video>
         
-        <button class="hangup-btn" onclick="hangupCall()"><i class="bi bi-telephone-x-fill"></i></button>
+        <div class="active-call-controls">
+            <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()"><i class="bi bi-mic-fill"></i></button>
+            <button class="hangup-btn" onclick="hangupCall()"><i class="bi bi-telephone-x-fill"></i></button>
+            <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()"><i class="bi bi-camera-video-fill"></i></button>
+        </div>
     </div>
 
     <div id="app-frame">
@@ -111,7 +151,7 @@
         <div id="landing-page">
             <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
             <h4>Chatting Group</h4>
-            <p class="text-muted small mb-4">VC, Telpon, Foto & Emoji</p>
+            <p class="text-muted small mb-4">VC, Telpon, Read Receipt & Fitur Lengkap</p>
             <button onclick="createRoom()" class="btn btn-success w-100 py-2">Buat Chat Baru</button>
         </div>
 
@@ -184,7 +224,7 @@
             document.getElementById('input-area-wrapper').style.display = 'flex';
             document.getElementById('room-id-display').innerText = "ID: " + roomId;
 
-            // 1. Listen Chat
+            // 1. LISTEN CHAT
             const q = query(collection(db, "rooms", roomId, "messages"), orderBy("createdAt", "asc"));
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-container');
@@ -194,48 +234,68 @@
                     const isMe = data.senderId === myId;
                     const div = document.createElement('div');
                     
+                    // LOGIC READ RECEIPT (Centang Biru)
+                    // Jika pesan BUKAN dari saya, dan belum dibaca, tandai sudah dibaca di database
+                    if (!isMe && !data.read) {
+                        updateDoc(doc(db, "rooms", roomId, "messages", docSnap.id), { read: true });
+                    }
+
                     if(data.deleted) {
                         div.className = `message ${isMe?'me':'them'} deleted`; div.innerHTML = `<i class="bi bi-slash-circle"></i> Dihapus`;
                     } else {
                         div.className = `message ${isMe?'me':'them'}`;
-                        let content = data.text;
+                        let content = `<div class="msg-text">${data.text}</div>`; // Bungkus teks
+                        
                         // Tampilkan Gambar / Video
                         if(data.mediaData) {
                             if(data.type === 'video') content = `<video src="${data.mediaData}" controls class="media-content"></video> ${data.text}`;
                             else content = `<img src="${data.mediaData}" class="media-content"> ${data.text}`;
                         }
-                        div.innerHTML = `${content} <div class="msg-meta">${data.createdAt?.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||''}</div>`;
+                        
+                        // Centang Logic
+                        const tickIcon = data.read ? 'bi-check-all read' : 'bi-check-all';
+                        const tickHtml = isMe ? `<i class="bi ${tickIcon} msg-tick"></i>` : '';
+
+                        div.innerHTML = `${content} 
+                        <div class="msg-meta">
+                            ${data.createdAt?.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||''} 
+                            ${tickHtml}
+                        </div>`;
+                        
                         if(isMe) div.onclick = () => { window.selectedMsgId = docSnap.id; document.getElementById('delete-modal').style.display = 'flex'; };
                     }
                     container.appendChild(div);
                 });
-                container.scrollTop = container.scrollHeight;
+                // Auto scroll
+                if(container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+                    container.scrollTop = container.scrollHeight;
+                }
             });
 
-            // 2. Listen Calls (Signaling)
+            // 2. LISTEN CALLS
             callDocRef = doc(db, "rooms", roomId, "calls", "active_call");
             onSnapshot(callDocRef, (snapshot) => {
                 const data = snapshot.data();
-                // Cek Panggilan Masuk
+                // Ada Panggilan Masuk
                 if (data && data.offer && !pc && data.callerId !== myId) {
-                    if(data.status === 'rejected') return; // Kalau sudah ditolak jangan bunyi lagi
+                    // Kalau status sudah 'connected', berarti sudah ada yang angkat, jangan bunyi
+                    if (data.status === 'connected') {
+                        document.getElementById('incoming-call-overlay').style.display = 'none';
+                        document.getElementById('ringtone').pause();
+                        return;
+                    }
                     showIncomingCall(data);
                 }
-                // Cek jika lawan menolak
-                if (data && data.status === 'rejected' && data.callerId === myId) {
-                    alert("Panggilan Ditolak");
-                    cleanupCall();
-                }
-                // Cek jika lawan menutup
+                // Panggilan Selesai (Dihapus dari DB)
                 if (!data && pc) {
                     cleanupCall();
+                    alert("Panggilan berakhir.");
                 }
             });
         }
 
-        // --- STEP 1: START CALL (Caller) ---
+        // --- STEP 1: START CALL ---
         window.startCallSetup = async (type) => {
-            // Setup UI
             document.getElementById('active-call-overlay').style.display = 'flex';
             document.getElementById('call-status-msg').innerText = "Memanggil...";
             if(type === 'voice') document.getElementById('voice-ui').style.display = 'flex';
@@ -243,16 +303,14 @@
             await initializePC();
             await getLocalStream(type);
 
-            // Create Offer
             const offerDescription = await pc.createOffer();
             await pc.setLocalDescription(offerDescription);
             
             const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
             
-            // Kirim ke DB (Status: offering)
+            // Kirim Status: offering
             await setDoc(callDocRef, { offer, callerId: myId, type: type, status: 'offering' });
 
-            // Listen Answer
             onSnapshot(callDocRef, (snapshot) => {
                 const data = snapshot.data();
                 if(!pc) return;
@@ -263,7 +321,7 @@
             });
         };
 
-        // --- STEP 2: INCOMING CALL (Receiver UI) ---
+        // --- STEP 2: INCOMING CALL ---
         function showIncomingCall(data) {
             incomingCallData = data;
             document.getElementById('incoming-call-overlay').style.display = 'flex';
@@ -271,13 +329,13 @@
             document.getElementById('ringtone').play().catch(e => console.log("Tap to enable sound"));
         }
 
-        // --- STEP 3: REJECT CALL ---
-        window.rejectCall = async () => {
+        // --- STEP 3: REJECT CALL (LOKAL SAJA) ---
+        // Ini permintaan Anda: "jangan satu yg menolak tapi semua ikut mati"
+        window.rejectCallLocal = () => {
             document.getElementById('ringtone').pause();
             document.getElementById('incoming-call-overlay').style.display = 'none';
-            // Update status jadi rejected agar penelpon tau
-            if(callDocRef) await updateDoc(callDocRef, { status: 'rejected' });
-            setTimeout(() => deleteDoc(callDocRef), 2000); // Hapus doc setelah 2 detik
+            // Kita TIDAK menghapus data di DB. 
+            // Jadi HP teman lain masih berbunyi sampai ada yang angkat atau penelpon matikan.
         };
 
         // --- STEP 4: ANSWER CALL ---
@@ -292,24 +350,20 @@
             await initializePC();
             await getLocalStream(type);
 
-            // Set Remote (Offer)
             await pc.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
-
-            // Create Answer
             const answerDescription = await pc.createAnswer();
             await pc.setLocalDescription(answerDescription);
 
             const answer = { type: answerDescription.type, sdp: answerDescription.sdp };
             
-            // Update DB
+            // Update DB jadi connected -> Biar HP lain berhenti bunyi
             await updateDoc(callDocRef, { answer, status: 'connected' });
         };
 
-        // --- HELPER: WebRTC Init ---
+        // --- HELPER: WebRTC ---
         async function initializePC() {
             pc = new RTCPeerConnection(servers);
             
-            // Handle ICE Candidates
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
                    const candidatesCol = collection(db, "rooms", roomId, "calls", "active_call", "candidates");
@@ -317,14 +371,12 @@
                 }
             };
             
-            // Handle Remote Stream
             pc.ontrack = (event) => {
                 const remoteVideo = document.getElementById('remoteVideo');
                 event.streams[0].getTracks().forEach(track => remoteVideo.srcObject = event.streams[0]);
                 document.getElementById('call-status-msg').style.display = 'none';
             };
 
-            // Listen for Candidates from Peer
             const candidatesCol = collection(db, "rooms", roomId, "calls", "active_call", "candidates");
             onSnapshot(candidatesCol, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
@@ -337,23 +389,44 @@
         }
 
         async function getLocalStream(type) {
-            // Kalau Voice, video: false
             const constraints = { audio: true, video: type === 'video' };
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
             
             const localVideo = document.getElementById('localVideo');
-            if(type === 'video') {
-                localVideo.srcObject = localStream;
-            } else {
-                localVideo.srcObject = null; // Matikan preview kamera sendiri kalau voice
-            }
+            if(type === 'video') localVideo.srcObject = localStream;
+            else localVideo.srcObject = null;
         }
+
+        // --- TOGGLE MUTE & VIDEO ---
+        window.toggleMic = () => {
+            const audioTrack = localStream.getAudioTracks()[0];
+            if(audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                // Ubah warna tombol
+                document.getElementById('btn-mic').classList.toggle('off', !audioTrack.enabled);
+                // Ganti Icon
+                const icon = document.querySelector('#btn-mic i');
+                icon.classList.toggle('bi-mic-fill', audioTrack.enabled);
+                icon.classList.toggle('bi-mic-mute-fill', !audioTrack.enabled);
+            }
+        };
+
+        window.toggleCam = () => {
+            const videoTrack = localStream.getVideoTracks()[0];
+            if(videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                document.getElementById('btn-cam').classList.toggle('off', !videoTrack.enabled);
+                const icon = document.querySelector('#btn-cam i');
+                icon.classList.toggle('bi-camera-video-fill', videoTrack.enabled);
+                icon.classList.toggle('bi-camera-video-off-fill', !videoTrack.enabled);
+            }
+        };
 
         // --- HANGUP ---
         window.hangupCall = async () => {
-            await deleteDoc(callDocRef); // Hapus sinyal
+            // Hapus Dokumen Panggilan di DB (Ini akan memutus semua koneksi)
+            if(callDocRef) await deleteDoc(callDocRef); 
             cleanupCall();
         };
 
@@ -364,60 +437,48 @@
             document.getElementById('incoming-call-overlay').style.display = 'none';
             document.getElementById('ringtone').pause();
             document.getElementById('voice-ui').style.display = 'none';
+            
+            // Reset Tombol UI
+            document.getElementById('btn-mic').classList.remove('off');
+            document.getElementById('btn-cam').classList.remove('off');
         }
 
-        // --- FITUR CHAT (FILE & EMOJI) ---
+        // --- CHAT UTILS ---
         window.sendMessage = async (mediaData = null, type = 'text') => {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             document.getElementById('emoji-drawer').classList.remove('open');
-
             if ((text || mediaData) && roomId) {
                 input.value = "";
                 await addDoc(collection(db, "rooms", roomId, "messages"), {
-                    text: text, mediaData: mediaData, type: type, // text, image, video
-                    senderId: myId, createdAt: serverTimestamp(), deleted: false
+                    text: text, mediaData: mediaData, type: type, 
+                    senderId: myId, createdAt: serverTimestamp(), deleted: false, read: false // Default belum dibaca
                 });
             }
         };
 
-        // File Handler (Kompresi Gambar / Video Pendek)
+        // File Handler
         window.triggerFile = () => document.getElementById('file-input').click();
         document.getElementById('file-input').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const result = ev.target.result;
-                
-                // Validasi Ukuran (Max 3MB biar gak crash Firestore)
-                if(file.size > 3 * 1024 * 1024) {
-                    alert("File terlalu besar! Maksimal 3MB untuk versi gratis.");
-                    return;
-                }
-
-                if(file.type.startsWith('video')) {
-                    sendMessage(result, 'video');
-                } else {
-                    // Kompresi Gambar
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext("2d");
-                        const MAX_WIDTH = 600; 
-                        const scale = MAX_WIDTH / img.width;
+                if(file.size > 3 * 1024 * 1024) { alert("Max 3MB"); return; }
+                if(file.type.startsWith('video')) { sendMessage(result, 'video'); } 
+                else {
+                    const img = new Image(); img.onload = () => {
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext("2d");
+                        const MAX_WIDTH = 600; const scale = MAX_WIDTH / img.width;
                         canvas.width = MAX_WIDTH; canvas.height = img.height * scale;
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         sendMessage(canvas.toDataURL("image/jpeg", 0.7), 'image');
-                    };
-                    img.src = result;
+                    }; img.src = result;
                 }
-            };
-            reader.readAsDataURL(file);
+            }; reader.readAsDataURL(file);
         });
 
-        // --- UTILS LAIN ---
         document.getElementById('message-input').addEventListener("keypress", (e) => { if (e.key === "Enter") window.sendMessage(); });
         window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
         window.closeModal = () => document.getElementById('delete-modal').style.display = 'none';
