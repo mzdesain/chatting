@@ -350,7 +350,7 @@
 
         function loadData() { loadChats(); loadGroups(); loadCallHistory(); listenIncomingCalls(); }
 
-        // --- LOAD CHATS ---
+        // --- LOAD CHATS (WITH DELETE) ---
         function loadChats() {
             const q = query(collection(db, "chats"), where("participants", "array-contains", currentUser.uid), orderBy("lastUpdated", "desc"));
             onSnapshot(q, (snap) => {
@@ -380,6 +380,7 @@
                     `;
                     el.onclick = () => openRoom(d.id, name, 'private', pid);
                     
+                    // LONG PRESS DELETE
                     let timer;
                     const start = () => { timer = setTimeout(() => { chatToDelete = d.id; document.getElementById('confirm-modal').style.display='flex'; }, 800); };
                     const end = () => clearTimeout(timer);
@@ -441,7 +442,8 @@
         }
 
         window.promptNewChat = async () => {
-            let ph = prompt("Nomor HP Teman (08...):"); if(!ph) return;
+            let ph = prompt("Nomor HP Teman (08...):");
+            if(!ph) return;
             ph = formatPhone(ph);
             const snap = await getDocs(query(collection(db, "users"), where("phone", "==", ph)));
             if(snap.empty) return alert("Nomor belum terdaftar");
