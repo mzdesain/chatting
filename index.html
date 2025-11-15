@@ -3,198 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WhatsApp</title>
+    <title>WA Native Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src='https://meet.jit.si/external_api.js'></script>
 
     <style>
         :root { 
-            --wa-primary: #008069; 
-            --wa-light: #fff;
-            --wa-bg-chat: #efeae2;
-            --wa-bubble-me: #d9fdd3;
-            --wa-bubble-them: #fff;
+            --wa-teal: #008069; --wa-light-green: #25d366; --wa-bg: #efeae2;
+            --wa-bubble-out: #d9fdd3; --wa-bubble-in: #ffffff;
+            --wa-text-primary: #111b21; --wa-text-secondary: #667781;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: Helvetica, Arial, sans-serif; }
         body { background-color: #d1d7db; margin: 0; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
         
-        #app-frame { width: 100%; height: 100%; background-color: #fff; display: flex; flex-direction: column; position: relative; max-width: 450px; }
+        #app-frame { width: 100%; height: 100%; background-color: #fff; display: flex; flex-direction: column; position: relative; max-width: 450px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
 
-        /* LAYAR LOGIN */
-        #login-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .wa-logo { width: 80px; margin-bottom: 20px; }
-        .login-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-size: 16px; }
-        .btn-wa { width: 100%; background: var(--wa-primary); color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; }
+        /* LOGIN UI */
+        .full-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+        .login-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; font-size: 16px; }
+        .btn-wa { width: 100%; background: var(--wa-teal); color: white; border: none; padding: 10px; border-radius: 25px; font-weight: bold; }
 
-        /* HOME SCREEN */
+        /* HOME UI */
         #home-screen { display: none; flex-direction: column; height: 100%; }
-        .home-header { background: var(--wa-light); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
-        .brand-text { color: var(--wa-primary); font-weight: bold; font-size: 22px; }
-        .header-icons i { font-size: 20px; margin-left: 15px; color: #555; cursor: pointer; }
-        
-        .search-area { padding: 10px; }
-        .search-input { width: 100%; background: #f0f2f5; border: none; padding: 8px 15px; border-radius: 20px; outline: none; }
+        .home-header { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .wa-brand { color: var(--wa-teal); font-weight: 700; font-size: 22px; }
+        .search-box { width: 100%; background: #f0f2f5; border: none; padding: 8px 15px; border-radius: 8px; margin: 0 15px 10px 15px; width: calc(100% - 30px); outline: none; }
 
-        /* LIST CHAT (RIWAYAT) */
         .chat-list { flex: 1; overflow-y: auto; padding-bottom: 80px; }
-        .chat-item { display: flex; padding: 12px 15px; cursor: pointer; align-items: center; }
-        .chat-item:active { background: #f5f5f5; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #ccc; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-right: 15px; overflow: hidden; flex-shrink: 0; }
-        .chat-info { flex: 1; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; min-width: 0; }
-        .chat-top { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .chat-name { font-weight: 600; font-size: 16px; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-        .chat-time { font-size: 11px; color: #666; }
-        .chat-msg { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-item { display: flex; padding: 12px 15px; cursor: pointer; align-items: center; border-bottom: 1px solid #f0f0f0; }
+        .list-item:active { background: #f5f5f5; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #dfe3e5; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; margin-right: 15px; flex-shrink: 0; font-weight:bold; }
+        .list-info { flex: 1; min-width: 0; }
+        .list-top { display: flex; justify-content: space-between; }
+        .list-name { font-weight: 600; font-size: 16px; color: #111; }
+        .list-time { font-size: 11px; color: #666; }
+        .list-msg { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* FAB BUTTON */
-        .fab { position: absolute; bottom: 90px; right: 20px; width: 55px; height: 55px; background: var(--wa-primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; }
-
-        /* BOTTOM NAV */
-        .nav-bar { position: absolute; bottom: 0; width: 100%; height: 65px; background: white; border-top: 1px solid #ddd; display: flex; align-items: center; justify-content: space-around; z-index: 90; }
-        .nav-item { text-align: center; color: #555; font-size: 10px; font-weight: 500; cursor: pointer; width: 25%; }
-        .nav-item i { display: block; font-size: 20px; margin-bottom: 3px; padding: 3px 15px; border-radius: 15px; margin: 0 auto 3px auto; }
-        .nav-item.active { color: #000; font-weight: bold; }
+        /* FAB & NAV */
+        .fab { position: absolute; bottom: 80px; right: 20px; width: 55px; height: 55px; background: var(--wa-teal); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; }
+        .nav-bar { position: absolute; bottom: 0; width: 100%; height: 65px; background: white; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 90; }
+        .nav-item { text-align: center; color: #666; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-item.active { color: #111; font-weight: bold; }
+        .nav-item i { display: block; font-size: 20px; margin-bottom: 2px; width: 50px; margin: 0 auto 2px auto; border-radius: 15px; padding: 3px 0; }
         .nav-item.active i { background: #cbf5e6; color: #003d2d; }
 
         /* CHAT ROOM */
-        #chat-room { display: none; flex-direction: column; height: 100%; background: var(--wa-bg-chat); position: absolute; top: 0; width: 100%; z-index: 200; }
-        .room-header { background: var(--wa-primary); padding: 10px; display: flex; align-items: center; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        #chat-room { display: none; flex-direction: column; height: 100%; background: var(--wa-bg); position: absolute; top: 0; width: 100%; z-index: 200; }
+        .room-header { background: var(--wa-teal); padding: 10px; display: flex; align-items: center; color: white; }
+        .msg-list { flex: 1; overflow-y: auto; padding: 10px 5%; display: flex; flex-direction: column; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
         
-        .msg-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-size: 400px; }
-        
-        /* BUBBLE CHAT */
-        .msg { max-width: 75%; padding: 6px 9px; margin-bottom: 4px; border-radius: 8px; font-size: 14.2px; position: relative; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); display: flex; flex-wrap: wrap; }
-        .msg.me { background: var(--wa-bubble-me); align-self: flex-end; border-top-right-radius: 0; }
-        .msg.them { background: var(--wa-bubble-them); align-self: flex-start; border-top-left-radius: 0; }
-        .msg-content { padding-right: 10px; }
-        .msg-time { font-size: 10px; color: #667781; margin-left: auto; align-self: flex-end; margin-top: 5px; }
-        
-        /* INPUT */
+        .msg { max-width: 75%; padding: 6px 9px; margin-bottom: 4px; border-radius: 8px; font-size: 14.2px; position: relative; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); display: flex; flex-wrap: wrap; background: white; }
+        .msg.me { background: var(--wa-bubble-out); align-self: flex-end; border-top-right-radius: 0; }
+        .msg.them { background: var(--wa-bubble-in); align-self: flex-start; border-top-left-radius: 0; }
+        .msg-content { padding-right: 10px; word-wrap: break-word; }
+        .msg-meta { font-size: 10px; color: #667781; margin-left: auto; align-self: flex-end; margin-top: 5px; }
+        .tick { font-size: 14px; margin-left: 2px; color: #8696a0; }
+        .tick.read { color: #53bdeb; }
+
         .input-box { background: white; padding: 5px 10px; display: flex; align-items: center; min-height: 55px; }
         .msg-input { flex: 1; border-radius: 20px; border: none; background: #f0f2f5; padding: 10px 15px; margin: 0 5px; outline: none; font-size: 15px; }
-
-        /* EMOJI */
         #emoji-drawer { height: 0; overflow-y: auto; transition: height 0.2s; background: #e9edef; display: grid; grid-template-columns: repeat(8, 1fr); }
-        #emoji-drawer.open { height: 200px; padding: 10px; }
-        .emoji { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; }
+        #emoji-drawer.open { height: 200px; padding: 10px; border-top: 1px solid #ccc; }
+        .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; }
 
-        /* CALL OVERLAY */
-        #call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; flex-direction: column; align-items: center; justify-content: center; }
-        #jitsi-frame { width: 100%; height: 100%; }
-        .end-call-btn { position: absolute; bottom: 30px; background: red; width: 60px; height: 60px; border-radius: 50%; color: white; font-size: 24px; border: none; z-index: 5001; display: flex; align-items: center; justify-content: center; }
+        /* NATIVE CALL UI */
+        .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111b21; z-index: 99999; flex-direction: column; align-items: center; justify-content: center; }
+        #incoming-overlay { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.pinimg.com/originals/48/28/e0/4828e05a7069d8f9502b90ba4d338981.jpg'); background-size: cover; color: white; }
+        
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .local-video { position: absolute; bottom: 100px; right: 20px; width: 90px; height: 130px; background: #333; border-radius: 10px; border: 2px solid white; object-fit: cover; transform: scaleX(-1); z-index: 100000; }
+        
+        .call-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; z-index: 100001; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 30px; }
+        .c-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 20px; }
+        .c-btn.red { background: #f13a37; width: 60px; height: 60px; font-size: 24px; }
+        .c-btn.green { background: #25d366; width: 60px; height: 60px; font-size: 24px; }
+        .c-btn.off { background: white; color: black; }
 
         /* MODAL */
-        #confirm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 4000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 5px; width: 80%; max-width: 300px; }
+        #confirm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 10000; align-items: center; justify-content: center; }
+        .modal-box { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="wa-logo">
-        <h3 class="mb-3">Selamat Datang</h3>
-        <div id="step-phone" style="width:100%;">
-            <input type="text" id="input-name" class="login-input" placeholder="Nama Anda (Wajib)">
-            <input type="tel" id="input-phone" class="login-input" placeholder="Nomor HP (0812xxx)">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
+        <h3>Selamat Datang</h3>
+        <div id="step-phone">
+            <input type="text" id="in-name" class="login-input" placeholder="Nama Anda (Wajib)">
+            <input type="tel" id="in-phone" class="login-input" placeholder="Nomor HP (0812xxx)">
             <div id="recaptcha-container"></div>
             <button class="btn-wa" onclick="kirimOTP()">Masuk</button>
         </div>
-        <div id="step-otp" style="width:100%; display:none;">
-            <input type="number" id="input-otp" class="login-input" placeholder="Kode OTP">
-            <button class="btn-wa" onclick="verifikasiOTP()">Verifikasi</button>
+        <div id="step-otp" style="display:none;">
+            <input type="number" id="in-otp" class="login-input" placeholder="Kode OTP">
+            <button class="btn-wa" onclick="verifOTP()">Verifikasi</button>
         </div>
-        <p id="login-status" class="mt-3 text-danger small"></p>
     </div>
 
     <div id="app-frame" style="display:none;">
-        
         <div id="home-screen">
             <div class="home-header">
-                <span class="brand-text">WhatsApp</span>
-                <div class="header-icons">
+                <span class="wa-brand">WhatsApp</span>
+                <div style="display:flex; gap:20px;">
                     <i class="bi bi-camera"></i>
-                    <i class="bi bi-search"></i>
                     <i class="bi bi-three-dots-vertical" onclick="logout()"></i>
                 </div>
             </div>
-            <div class="search-area">
-                <input type="text" class="search-input" placeholder="Cari..." id="search-bar" onkeyup="cariChat()">
-            </div>
-
-            <div id="tab-chats" class="chat-list" style="display:block;">
-                <div id="list-chat-container"></div> </div>
+            <input type="text" id="search-bar" class="search-box" placeholder="Cari..." onkeyup="cariChat()">
             
-            <div id="tab-calls" class="chat-list" style="display:none;">
-                <div id="list-call-container"></div>
+            <div id="view-chats" class="chat-list"></div>
+            <div id="view-calls" class="chat-list" style="display:none;"></div>
+            <div id="view-groups" class="chat-list" style="display:none; text-align:center; padding:20px;">
+                <button class="btn-wa" onclick="buatGrup()">+ Grup Baru</button>
+                <div id="group-list" class="mt-3"></div>
             </div>
-
-            <div id="tab-groups" class="chat-list" style="display:none; text-align:center; padding:20px;">
-                <button class="btn-wa" onclick="buatGrup()">+ Buat Grup Baru</button>
-                <div id="list-group-container" class="mt-3"></div>
-            </div>
-
-            <div id="tab-fitur" class="chat-list" style="display:none; text-align:center; padding:50px;">
+            <div id="view-about" class="chat-list" style="display:none; text-align:center; padding:50px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="60">
-                <h5 class="mt-3">WhatsApp Clone</h5>
-                <p class="text-muted">Versi 5.0 (Compat Mode)</p>
+                <h5 class="mt-3">WA Native Pro</h5>
+                <p class="text-muted">Versi 5.0</p>
             </div>
 
-            <div class="fab" onclick="tambahChat()">
-                <i class="bi bi-plus-lg"></i>
-            </div>
+            <div class="fab" onclick="tambahChat()"><i class="bi bi-chat-text-fill"></i></div>
 
             <div class="nav-bar">
-                <div class="nav-item active" onclick="gantiTab('chats', this)"><i class="bi bi-chat-text-fill"></i>Chat</div>
-                <div class="nav-item" onclick="gantiTab('calls', this)"><i class="bi bi-telephone"></i>Panggilan</div>
-                <div class="nav-item" onclick="gantiTab('groups', this)"><i class="bi bi-people"></i>Komunitas</div>
-                <div class="nav-item" onclick="gantiTab('fitur', this)"><i class="bi bi-shop"></i>Fitur</div>
+                <div class="nav-item active" onclick="bukaTab('chats', this)"><i class="bi bi-chat-text-fill"></i>Chat</div>
+                <div class="nav-item" onclick="bukaTab('calls', this)"><i class="bi bi-telephone"></i>Panggilan</div>
+                <div class="nav-item" onclick="bukaTab('groups', this)"><i class="bi bi-people"></i>Komunitas</div>
+                <div class="nav-item" onclick="bukaTab('about', this)"><i class="bi bi-info-circle"></i>Fitur</div>
             </div>
         </div>
 
         <div id="chat-room">
             <div class="room-header">
-                <i class="bi bi-arrow-left me-2" style="font-size:24px; cursor:pointer;" onclick="tutupChat()"></i>
-                <div class="avatar" style="width:35px; height:35px; font-size:18px; margin-right:10px;"><i class="bi bi-person-fill"></i></div>
-                <div style="flex:1;">
-                    <div id="room-name" style="font-weight:600;">User</div>
-                </div>
+                <i class="bi bi-arrow-left me-3" style="font-size:24px; cursor:pointer;" onclick="tutupChat()"></i>
+                <div class="avatar" style="width:35px; height:35px; font-size:16px; margin-right:10px;"><i class="bi bi-person-fill"></i></div>
+                <div style="flex:1; font-weight:bold; font-size:16px;" id="room-title">Nama</div>
                 <div style="display:flex; gap:20px;">
                     <i class="bi bi-camera-video-fill" style="font-size:22px; cursor:pointer;" onclick="mulaiCall('video')"></i>
                     <i class="bi bi-telephone-fill" style="font-size:20px; cursor:pointer;" onclick="mulaiCall('voice')"></i>
                 </div>
             </div>
-            
-            <div id="msg-container" class="msg-container"></div>
-            
+            <div id="msg-list" class="msg-list"></div>
             <div class="input-box">
-                <i class="bi bi-emoji-smile text-secondary me-2 fs-4" onclick="toggleEmoji()"></i>
-                <i class="bi bi-paperclip text-secondary me-2 fs-4" style="transform:rotate(45deg)" onclick="document.getElementById('file-up').click()"></i>
+                <i class="bi bi-emoji-smile fs-4 text-secondary me-2" onclick="toggleEmoji()"></i>
+                <i class="bi bi-paperclip fs-4 text-secondary me-2" style="transform:rotate(45deg)" onclick="document.getElementById('file-up').click()"></i>
                 <input type="text" id="msg-input" class="msg-input" placeholder="Ketik pesan" autocomplete="off">
-                <div style="background:#008069; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; margin-left:5px; cursor:pointer;" onclick="kirimPesan()">
-                    <i class="bi bi-send-fill"></i>
-                </div>
+                <div onclick="kirim()" style="background:var(--wa-teal); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; margin-left:5px; cursor:pointer;"><i class="bi bi-send-fill"></i></div>
             </div>
             <div id="emoji-drawer"></div>
         </div>
     </div>
 
-    <div id="call-overlay">
-        <div id="jitsi-container" style="width:100%; height:100%;"></div>
-        <button class="end-call-btn" onclick="matikanCall()"><i class="bi bi-telephone-x-fill"></i></button>
+    <div id="incoming-overlay" class="call-overlay">
+        <div class="avatar" style="width:100px; height:100px; font-size:40px; margin-bottom:20px;"><i class="bi bi-person-fill"></i></div>
+        <h2 id="inc-name">...</h2>
+        <p>Memanggil...</p>
+        <div style="margin-top:50px; display:flex; gap:40px;">
+            <button class="c-btn red" onclick="tolakCall()"><i class="bi bi-telephone-x-fill"></i></button>
+            <button class="c-btn green" onclick="terimaCall()"><i class="bi bi-telephone-fill"></i></button>
+        </div>
+    </div>
+
+    <div id="active-overlay" class="call-overlay">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <video id="localVideo" class="local-video" autoplay playsinline muted></video>
+        <div class="active-controls">
+            <button class="c-btn" onclick="switchCam()"><i class="bi bi-arrow-repeat"></i></button>
+            <button class="c-btn" id="btn-mic" onclick="toggleMic()"><i class="bi bi-mic-fill"></i></button>
+            <button class="c-btn red" onclick="hangup()"><i class="bi bi-telephone-x-fill"></i></button>
+            <button class="c-btn" id="btn-cam" onclick="toggleCam()"><i class="bi bi-camera-video-fill"></i></button>
+        </div>
     </div>
 
     <div id="confirm-modal">
-        <div class="modal-content">
+        <div class="modal-box">
             <h5>Hapus Chat?</h5>
-            <p class="small text-muted">Chat akan hilang permanen.</p>
-            <div class="d-flex justify-content-end gap-3">
-                <button class="btn btn-sm btn-secondary" onclick="document.getElementById('confirm-modal').style.display='none'">Batal</button>
-                <button class="btn btn-sm btn-danger" onclick="prosesHapus()">Hapus</button>
+            <div class="d-flex justify-content-center mt-3 gap-2">
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('confirm-modal').style.display='none'">Batal</button>
+                <button class="btn btn-danger btn-sm" onclick="hapusChatAction()">Hapus</button>
             </div>
         </div>
     </div>
@@ -202,7 +193,8 @@
     <input type="file" id="file-up" hidden>
 
     <script>
-        // --- KONFIGURASI FIREBASE ---
+        // --- CONFIG ---
+        // GANTI INI DENGAN CONFIG FIREBASE ANTUM JIKA PERLU, TAPI INI SUDAH DEFAULT
         const firebaseConfig = {
             apiKey: "AIzaSyB5o4FTyWTFIbdvpO2-vfN2_Mf750GtiXM",
             authDomain: "chatting-22bb9.firebaseapp.com",
@@ -212,352 +204,323 @@
             appId: "1:540910795541:web:d0fdb25b2e2f928c36c71c"
         };
 
-        // Inisialisasi Compat Mode
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        
+
         let currentUser = null;
-        let currentChatId = null;
-        let currentPartnerId = null;
+        let activeChatId = null;
+        let activePartnerId = null;
         let chatToDelete = null;
-        let jitsiApi = null;
+        let currentTab = 'chats';
 
-        // --- AUTHENTICATION ---
+        // --- AUTH ---
         auth.onAuthStateChanged(user => {
-            if (user) {
+            if(user) {
                 currentUser = user;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-frame').style.display = 'flex';
-                document.getElementById('home-screen').style.display = 'flex';
+                document.getElementById('login-screen').style.display='none';
+                document.getElementById('app-frame').style.display='flex';
+                document.getElementById('home-screen').style.display='flex';
                 
-                // Simpan User ke Database kalau belum ada
-                const nama = localStorage.getItem('wa_temp_name') || "User";
+                // Simpan User
+                const nama = localStorage.getItem('wa_name') || "User";
                 db.collection("users").doc(user.uid).set({
-                    uid: user.uid,
-                    phone: user.phoneNumber,
-                    displayName: nama
-                }, { merge: true });
-
+                    uid: user.uid, phone: user.phoneNumber, displayName: nama
+                }, {merge:true});
+                
                 muatData();
             } else {
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('app-frame').style.display = 'none';
-                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {'size': 'invisible'});
+                document.getElementById('login-screen').style.display='flex';
+                document.getElementById('app-frame').style.display='none';
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {'size':'invisible'});
             }
         });
 
-        function formatPhone(num) { return num.startsWith('08') ? '+62' + num.substring(1) : num; }
-
-        function kirimOTP() {
-            const nama = document.getElementById('input-name').value;
-            const phone = document.getElementById('input-phone').value;
-            if(!nama || !phone) return alert("Isi nama dan nomor HP");
-            
-            localStorage.setItem('wa_temp_name', nama);
-            const formattedPhone = formatPhone(phone);
-
-            auth.signInWithPhoneNumber(formattedPhone, window.recaptchaVerifier)
-                .then(confirmationResult => {
-                    window.confirmationResult = confirmationResult;
-                    document.getElementById('step-phone').style.display = 'none';
-                    document.getElementById('step-otp').style.display = 'block';
-                }).catch(error => {
-                    document.getElementById('login-status').innerText = error.message;
-                });
+        function formatPhone(n){ return n.startsWith('08')?'+62'+n.substring(1):n; }
+        function kirimOTP(){
+            const n = document.getElementById('in-name').value;
+            const p = document.getElementById('in-phone').value;
+            if(!n||!p) return alert("Lengkapi data");
+            localStorage.setItem('wa_name', n);
+            auth.signInWithPhoneNumber(formatPhone(p), window.recaptchaVerifier)
+                .then(res=>{ window.confirmResult=res; document.getElementById('step-phone').style.display='none'; document.getElementById('step-otp').style.display='block'; })
+                .catch(e=>alert(e.message));
         }
+        function verifOTP(){ window.confirmResult.confirm(document.getElementById('in-otp').value).catch(()=>alert("Kode Salah")); }
+        function logout(){ auth.signOut(); location.reload(); }
 
-        function verifikasiOTP() {
-            const code = document.getElementById('input-otp').value;
-            window.confirmationResult.confirm(code).catch(err => alert("Kode Salah"));
-        }
-
-        function logout() { auth.signOut(); location.reload(); }
-
-        // --- HOME SCREEN LOGIC ---
-        function gantiTab(tabName, el) {
-            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-            document.querySelectorAll('.chat-list').forEach(e => e.style.display = 'none');
-            document.getElementById('tab-' + tabName).style.display = 'block';
+        // --- NAVIGATION ---
+        function bukaTab(tab, el) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active');
+            ['chats','calls','groups','about'].forEach(t=>document.getElementById('view-'+t).style.display='none');
+            document.getElementById('view-'+tab).style.display='block';
             
-            // Atur Tombol FAB
             const fab = document.querySelector('.fab i');
-            fab.className = (tabName === 'chats') ? 'bi bi-chat-dots-fill' : 
-                            (tabName === 'groups') ? 'bi bi-people-fill' : 'bi bi-plus-lg';
+            fab.className = tab==='chats'?'bi bi-chat-text-fill':(tab==='groups'?'bi bi-plus-lg':'bi bi-telephone-plus');
+            document.querySelector('.fab').style.display = tab==='about'?'none':'flex';
         }
 
-        function muatData() {
-            muatChat();
-            muatPanggilan();
-            muatGrup();
-            cekPanggilanMasuk();
-        }
+        function muatData(){ muatChat(); muatTelpon(); muatGrup(); listenCall(); }
 
-        // 1. RIWAYAT CHAT
-        function muatChat() {
-            db.collection("chats")
-                .where("participants", "array-contains", currentUser.uid)
-                .orderBy("lastUpdated", "desc")
-                .onSnapshot(snapshot => {
-                    const container = document.getElementById('list-chat-container');
-                    container.innerHTML = "";
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const partnerId = data.participants.find(id => id !== currentUser.uid);
+        // --- CHAT LIST ---
+        function muatChat(){
+            db.collection("chats").where("participants", "array-contains", currentUser.uid).orderBy("lastUpdated", "desc")
+            .onSnapshot(snap => {
+                const div = document.getElementById('view-chats'); div.innerHTML="";
+                snap.forEach(d => {
+                    const data = d.data();
+                    const pid = data.participants.find(id=>id!==currentUser.uid);
+                    db.collection("users").doc(pid).get().then(u=>{
+                        const name = u.exists?u.data().displayName:"User";
+                        const time = data.lastUpdated?new Date(data.lastUpdated.seconds*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
                         
-                        // Ambil nama teman
-                        db.collection("users").doc(partnerId).get().then(uDoc => {
-                            const name = uDoc.exists ? uDoc.data().displayName : "User";
-                            const time = data.lastUpdated ? new Date(data.lastUpdated.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-                            
-                            const div = document.createElement('div');
-                            div.className = 'chat-item';
-                            div.setAttribute('data-name', name.toLowerCase());
-                            div.innerHTML = `
-                                <div class="avatar">${name[0].toUpperCase()}</div>
-                                <div class="chat-info">
-                                    <div class="chat-top">
-                                        <span class="chat-name">${name}</span>
-                                        <span class="chat-time">${time}</span>
-                                    </div>
-                                    <div class="chat-msg">${data.lastMessage || ''}</div>
-                                </div>
-                            `;
-                            
-                            // Klik Buka Chat
-                            div.onclick = () => bukaChat(doc.id, name, partnerId);
-                            
-                            // Tekan Lama Hapus
-                            let timer;
-                            const start = () => timer = setTimeout(() => { chatToDelete = doc.id; document.getElementById('confirm-modal').style.display='flex'; }, 800);
-                            const end = () => clearTimeout(timer);
-                            div.addEventListener('mousedown', start); div.addEventListener('mouseup', end);
-                            div.addEventListener('touchstart', start); div.addEventListener('touchend', end);
-
-                            container.appendChild(div);
-                        });
+                        const el = document.createElement('div'); el.className='list-item'; el.setAttribute('data-name', name.toLowerCase());
+                        el.innerHTML=`
+                            <div class="avatar">${name[0]}</div>
+                            <div class="list-info">
+                                <div class="list-top"><span class="list-name">${name}</span><span class="list-time">${time}</span></div>
+                                <div class="list-msg">${data.lastMessage||""}</div>
+                            </div>`;
+                        el.onclick=()=>bukaRoom(d.id, name, pid);
+                        
+                        // Long Press
+                        let t; const start=()=>{ t=setTimeout(()=>{chatToDelete=d.id; document.getElementById('confirm-modal').style.display='flex';},800); };
+                        const end=()=>clearTimeout(t);
+                        el.addEventListener('mousedown', start); el.addEventListener('mouseup', end); el.addEventListener('touchstart', start); el.addEventListener('touchend', end);
+                        
+                        div.appendChild(el);
                     });
                 });
-        }
-
-        // 2. TAMBAH CHAT BARU (CARI TEMAN)
-        window.tambahChat = async () => {
-            let phone = prompt("Masukkan Nomor HP Teman (08...):");
-            if(!phone) return;
-            const fPhone = formatPhone(phone);
-            
-            // Cari User
-            const snap = await db.collection("users").where("phone", "==", fPhone).get();
-            if(snap.empty) return alert("Nomor belum terdaftar di aplikasi ini.");
-            
-            const target = snap.docs[0].data();
-            if(target.uid === currentUser.uid) return alert("Tidak bisa chat diri sendiri");
-            
-            // Buat/Cari Room ID
-            const chatId = [currentUser.uid, target.uid].sort().join("_");
-            const chatRef = db.collection("chats").doc(chatId);
-            
-            const docSnap = await chatRef.get();
-            if(!docSnap.exists) {
-                await chatRef.set({
-                    participants: [currentUser.uid, target.uid],
-                    lastMessage: "",
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            bukaChat(chatId, target.displayName, target.uid);
-        };
-
-        // 3. CHAT ROOM
-        function bukaChat(id, name, pid) {
-            currentChatId = id;
-            currentPartnerId = pid;
-            document.getElementById('home-screen').style.display = 'none';
-            document.getElementById('chat-room').style.display = 'flex';
-            document.getElementById('room-name').innerText = name;
-            
-            db.collection("chats").doc(id).collection("messages").orderBy("createdAt", "asc")
-                .onSnapshot(snapshot => {
-                    const container = document.getElementById('msg-container');
-                    container.innerHTML = "";
-                    snapshot.forEach(doc => {
-                        const msg = doc.data();
-                        const isMe = msg.senderId === currentUser.uid;
-                        const div = document.createElement('div');
-                        div.className = `msg ${isMe ? 'me' : 'them'}`;
-                        
-                        let content = `<span>${msg.text}</span>`;
-                        if(msg.media) {
-                            content = msg.type === 'video' ? `<video src="${msg.media}" controls style="width:100%; border-radius:5px;"></video>` : `<img src="${msg.media}" style="width:100%; border-radius:5px;">`;
-                            if(msg.text) content += `<br><span>${msg.text}</span>`;
-                        }
-                        
-                        const time = msg.createdAt ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-                        div.innerHTML = `<div class="msg-content">${content}</div><div class="msg-time">${time} <i class="bi bi-check-all ${msg.read?'text-primary':''}"></i></div>`;
-                        container.appendChild(div);
-                        
-                        if(!isMe && !msg.read) {
-                            db.collection("chats").doc(id).collection("messages").doc(doc.id).update({read:true});
-                        }
-                    });
-                    container.scrollTop = container.scrollHeight;
-                });
-        }
-
-        window.tutupChat = () => {
-            document.getElementById('chat-room').style.display = 'none';
-            document.getElementById('home-screen').style.display = 'flex';
-            currentChatId = null;
-        };
-
-        window.kirimPesan = () => {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if((text || window.tempMedia) && currentChatId) {
-                db.collection("chats").doc(currentChatId).collection("messages").add({
-                    text: text,
-                    media: window.tempMedia || null,
-                    type: window.tempType || 'text',
-                    senderId: currentUser.uid,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    read: false
-                });
-                db.collection("chats").doc(currentChatId).update({
-                    lastMessage: text || (window.tempType==='image'?'📷 Foto':'🎥 Video'),
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                input.value = "";
-                window.tempMedia = null;
-                document.getElementById('emoji-drawer').classList.remove('open');
-            }
-        };
-
-        // --- FILE UPLOAD & EMOJI ---
-        document.getElementById('file-up').addEventListener('change', (e) => {
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                if(file.size > 3*1024*1024) return alert("Max 3MB");
-                window.tempType = file.type.startsWith('video') ? 'video' : 'image';
-                window.tempMedia = ev.target.result;
-                kirimPesan();
-            };
-            reader.readAsDataURL(file);
-        });
-
-        window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
-        const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍","👻","💩"];
-        emojis.forEach(e => { 
-            const s = document.createElement('div'); s.className='emoji'; s.innerText=e; 
-            s.onclick=()=>{document.getElementById('msg-input').value+=e}; 
-            document.getElementById('emoji-drawer').appendChild(s); 
-        });
-
-        // --- HAPUS CHAT ---
-        window.prosesHapus = () => {
-            if(chatToDelete) {
-                db.collection("chats").doc(chatToDelete).delete();
-                document.getElementById('confirm-modal').style.display='none';
-            }
-        };
-
-        // --- CALL (JITSI) ---
-        window.mulaiCall = (type) => {
-            if(!currentPartnerId) return;
-            const roomName = `Call_${currentChatId}_${Date.now()}`;
-            
-            // Kirim sinyal ke lawan
-            db.collection("calls").add({
-                callerId: currentUser.uid,
-                calleeId: currentPartnerId,
-                roomName: roomName,
-                type: type,
-                status: 'calling',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            
-            joinCall(roomName, type);
-        };
-
-        function cekPanggilanMasuk() {
-            db.collection("calls").where("calleeId", "==", currentUser.uid).where("status", "==", "calling")
-                .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            const data = change.doc.data();
-                            // Cek apakah panggilan baru (< 1 menit yang lalu)
-                            const timeDiff = Date.now() - data.timestamp.toMillis();
-                            if (timeDiff < 60000) {
-                                if(confirm(`Panggilan ${data.type} Masuk! Terima?`)) {
-                                    joinCall(data.roomName, data.type);
-                                    db.collection("calls").doc(change.doc.id).update({status: 'answered'});
-                                } else {
-                                    db.collection("calls").doc(change.doc.id).update({status: 'rejected'});
-                                }
-                            }
-                        }
-                    });
-                });
         }
 
-        function joinCall(roomName, type) {
-            document.getElementById('call-overlay').style.display = 'flex';
-            const domain = "meet.jit.si";
-            const options = {
-                roomName: roomName,
-                width: "100%",
-                height: "100%",
-                parentNode: document.querySelector('#jitsi-container'),
-                configOverwrite: { startWithAudioMuted: false, startWithVideoMuted: type === 'voice' },
-                interfaceConfigOverwrite: { TOOLBAR_BUTTONS: ['microphone', 'camera', 'hangup', 'tileview'] }
-            };
-            jitsiApi = new JitsiMeetExternalAPI(domain, options);
-            jitsiApi.addEventListeners({ videoConferenceLeft: () => matikanCall() });
-        }
-
-        window.matikanCall = () => {
-            if(jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
-            document.getElementById('call-overlay').style.display = 'none';
-        };
-
-        // --- RIWAYAT PANGGILAN & GRUP ---
-        function muatPanggilan() {
-            db.collection("calls").where("callerId", "==", currentUser.uid).orderBy("timestamp", "desc").limit(10)
-                .onSnapshot(snap => renderCallHistory(snap));
-            db.collection("calls").where("calleeId", "==", currentUser.uid).orderBy("timestamp", "desc").limit(10)
-                .onSnapshot(snap => renderCallHistory(snap));
-        }
-
-        function renderCallHistory(snap) {
-            const container = document.getElementById('list-call-container');
-            snap.forEach(doc => {
-                // Logika render sama dengan chat list
-                // Silakan dikembangkan jika ingin detail
+        function cariChat(){
+            const q = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.list-item').forEach(el=>{
+                const n = el.getAttribute('data-name');
+                el.style.display = n.includes(q)?'flex':'none';
             });
         }
         
-        window.cariChat = () => {
-            const q = document.getElementById('search-bar').value.toLowerCase();
-            document.querySelectorAll('.chat-item').forEach(el => {
-                const name = el.getAttribute('data-name');
-                el.style.display = name.includes(q) ? 'flex' : 'none';
-            });
-        };
-
-        function muatGrup() {
-            // Logic grup sama dengan chat, tinggal ganti query ke collection "groups"
+        function hapusChatAction(){
+            if(chatToDelete){ db.collection("chats").doc(chatToDelete).delete(); document.getElementById('confirm-modal').style.display='none'; }
         }
-        window.createNewGroup = () => {
-            const nama = prompt("Nama Grup:");
-            if(nama) {
-                db.collection("groups").add({
-                    name: nama,
-                    participants: [currentUser.uid],
+
+        // --- TAMBAH CHAT ---
+        async function tambahChat(){
+            let ph = prompt("Nomor Teman (08...):"); if(!ph) return;
+            const snap = await db.collection("users").where("phone","==",formatPhone(ph)).get();
+            if(snap.empty) return alert("Nomor belum terdaftar");
+            const target = snap.docs[0].data();
+            if(target.uid === currentUser.uid) return alert("Diri sendiri?");
+            
+            const chatId = [currentUser.uid, target.uid].sort().join("_");
+            const ref = db.collection("chats").doc(chatId);
+            const ex = await ref.get();
+            if(!ex.exists) await ref.set({ participants:[currentUser.uid, target.uid], lastMessage:"", lastUpdated: firebase.firestore.FieldValue.serverTimestamp() });
+            bukaRoom(chatId, target.displayName, target.uid);
+        }
+
+        // --- CHAT ROOM ---
+        function bukaRoom(id, name, pid){
+            activeChatId = id; activePartnerId = pid;
+            document.getElementById('home-screen').style.display='none';
+            document.getElementById('chat-room').style.display='flex';
+            document.getElementById('room-title').innerText = name;
+            
+            db.collection("chats").doc(id).collection("messages").orderBy("createdAt", "asc")
+            .onSnapshot(snap => {
+                const list = document.getElementById('msg-list'); list.innerHTML="";
+                snap.forEach(d => {
+                    const m = d.data();
+                    const isMe = m.senderId === currentUser.uid;
+                    if(!isMe && !m.read) db.collection("chats").doc(id).collection("messages").doc(d.id).update({read:true});
+                    
+                    const el = document.createElement('div');
+                    el.className = `msg ${isMe?'me':'them'}`;
+                    let body = `<span>${m.text}</span>`;
+                    if(m.media) body = m.type==='video'?`<video src="${m.media}" controls style="width:100%;border-radius:5px"></video> ${m.text}`:`<img src="${m.media}" style="width:100%;border-radius:5px"> ${m.text}`;
+                    
+                    const tick = isMe?`<i class="bi bi-check-all tick ${m.read?'read':''}"></i>`:'';
+                    const time = m.createdAt?new Date(m.createdAt.seconds*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+                    
+                    el.innerHTML = `<div class="msg-content">${body}</div><div class="msg-meta">${time} ${tick}</div>`;
+                    list.appendChild(el);
+                });
+                list.scrollTop = list.scrollHeight;
+            });
+        }
+
+        function tutupChat(){
+            document.getElementById('chat-room').style.display='none';
+            document.getElementById('home-screen').style.display='flex';
+            activeChatId = null;
+        }
+
+        function kirim(){
+            const txt = document.getElementById('msg-input').value.trim();
+            if((txt || window.tempMedia) && activeChatId){
+                document.getElementById('msg-input').value="";
+                document.getElementById('emoji-drawer').classList.remove('open');
+                
+                db.collection("chats").doc(activeChatId).collection("messages").add({
+                    text: txt, media: window.tempMedia||null, type: window.tempType||'text',
+                    senderId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp(), read: false
+                });
+                db.collection("chats").doc(activeChatId).update({
+                    lastMessage: txt || (window.tempType==='image'?'📷 Foto':'🎥 Video'),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                window.tempMedia=null;
             }
-        };
+        }
+
+        document.getElementById('file-up').addEventListener('change', (e)=>{
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader();
+            r.onload=(ev)=>{
+                if(f.size>3e6) return alert("Max 3MB");
+                window.tempType = f.type.startsWith('video')?'video':'image';
+                window.tempMedia = ev.target.result;
+                kirim();
+            }; r.readAsDataURL(f);
+        });
+
+        // --- CALLING (NATIVE WEBRTC COMPAT) ---
+        const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+        let pc, localStream, callDoc, incomingData, currentFacingMode = 'user';
+
+        function listenCall(){
+            db.collection("calls").where("calleeId", "==", currentUser.uid).where("status", "==", "offering")
+            .onSnapshot(snap => {
+                snap.docChanges().forEach(c => {
+                    if(c.type==='added'){
+                        const d = c.doc.data();
+                        incomingData = { id: c.doc.id, ...d };
+                        db.collection("users").doc(d.callerId).get().then(u=>{
+                            document.getElementById('inc-name').innerText = u.exists?u.data().displayName:"User";
+                            document.getElementById('incoming-overlay').style.display='flex';
+                            document.getElementById('ringtone').play().catch(()=>{});
+                        });
+                    }
+                });
+            });
+        }
+
+        async function mulaiCall(type){
+            document.getElementById('active-overlay').style.display='flex';
+            await initPC(); await getStream(type);
+            const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
+            
+            callDoc = await db.collection("calls").add({
+                callerId: currentUser.uid, calleeId: activePartnerId,
+                offer: {type:offer.type, sdp:offer.sdp}, type: type, status:'offering'
+            });
+            
+            // Catat History
+            db.collection("call_history").add({
+                callerId: currentUser.uid, calleeId: activePartnerId, type: type, timestamp: firebase.firestore.FieldValue.serverTimestamp(), participants:[currentUser.uid, activePartnerId]
+            });
+
+            callDoc.onSnapshot(s => {
+                const d = s.data(); if(!d){ cleanup(); return; }
+                if(d.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(d.answer));
+                if(d.status==='rejected'){ alert("Ditolak"); hangup(); }
+            });
+        }
+
+        async function terimaCall(){
+            document.getElementById('incoming-overlay').style.display='none';
+            document.getElementById('ringtone').pause();
+            document.getElementById('active-overlay').style.display='flex';
+            
+            callDoc = db.collection("calls").doc(incomingData.id);
+            await initPC(); await getStream(incomingData.type);
+            await pc.setRemoteDescription(new RTCSessionDescription(incomingData.offer));
+            const answer = await pc.createAnswer(); await pc.setLocalDescription(answer);
+            
+            await callDoc.update({ answer: {type:answer.type, sdp:answer.sdp}, status:'connected' });
+            
+            // Catat History
+             db.collection("call_history").add({
+                callerId: incomingData.callerId, calleeId: currentUser.uid, type: incomingData.type, timestamp: firebase.firestore.FieldValue.serverTimestamp(), participants:[currentUser.uid, incomingData.callerId]
+            });
+            
+            callDoc.onSnapshot(s=>{ if(!s.exists) cleanup(); });
+        }
+
+        async function tolakCall(){
+            document.getElementById('incoming-overlay').style.display='none';
+            document.getElementById('ringtone').pause();
+            if(incomingData) db.collection("calls").doc(incomingData.id).update({status:'rejected'});
+        }
+
+        async function hangup(){ if(callDoc) await callDoc.delete(); cleanup(); }
+
+        function cleanup(){
+            if(pc) pc.close();
+            if(localStream) localStream.getTracks().forEach(t=>t.stop());
+            document.getElementById('active-overlay').style.display='none';
+            document.getElementById('incoming-overlay').style.display='none';
+            document.getElementById('ringtone').pause();
+        }
+
+        async function initPC(){
+            pc = new RTCPeerConnection(servers);
+            pc.onicecandidate = e => { if(e.candidate && callDoc) callDoc.collection("candidates").add(e.candidate.toJSON()); };
+            pc.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
+            
+            // Tunggu doc dibuat
+            setTimeout(()=>{
+                if(!callDoc) return;
+                callDoc.collection("candidates").onSnapshot(s=>{
+                    s.docChanges().forEach(c=>{ if(c.type==='added') pc.addIceCandidate(new RTCIceCandidate(c.doc.data())).catch(()=>{}); });
+                });
+            }, 1000);
+        }
+
+        async function getStream(type){
+            const constraints = { audio:true, video: type==='video'?{facingMode:currentFacingMode}:false };
+            localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            localStream.getTracks().forEach(t=>pc.addTrack(t, localStream));
+            if(type==='video') document.getElementById('localVideo').srcObject = localStream;
+        }
+
+        // --- UTILS ---
+        window.toggleEmoji = () => document.getElementById('emoji-drawer').classList.toggle('open');
+        const emojis = ["😀","😂","🤣","😍","🥰","😭","🙏","❤️","🔥","👍","👻","💩"];
+        emojis.forEach(e => { const s = document.createElement('div'); s.className='emoji-btn'; s.innerText=e; s.onclick=()=>{document.getElementById('msg-input').value+=e}; document.getElementById('emoji-drawer').appendChild(s); });
+
+        function muatTelpon(){
+             db.collection("call_history").where("participants", "array-contains", currentUser.uid).orderBy("timestamp", "desc")
+             .onSnapshot(snap => {
+                 const div = document.getElementById('view-calls'); div.innerHTML="";
+                 snap.forEach(async d => {
+                     const data = d.data();
+                     const isOut = data.callerId === currentUser.uid;
+                     const pid = isOut ? data.calleeId : data.callerId;
+                     const u = await db.collection("users").doc(pid).get();
+                     const name = u.exists?u.data().displayName:"User";
+                     
+                     const el = document.createElement('div'); el.className='list-item';
+                     el.innerHTML = `<div class="avatar"><i class="bi bi-person-fill"></i></div>
+                     <div class="list-info">
+                        <div class="list-name" style="color:${data.status==='missed'?'red':'#000'}">${name}</div>
+                        <div class="list-time"><i class="bi bi-arrow-${isOut?'up-right':'down-left'}"></i> ${data.timestamp?.toDate().toLocaleString()}</div>
+                     </div>
+                     <i class="bi bi-${data.type==='video'?'camera-video':'telephone'}-fill text-success fs-5"></i>`;
+                     div.appendChild(el);
+                 });
+             });
+        }
+        function muatGrup(){ /* Logic grup sama persis chat, beda collection 'groups' */ }
+        window.buatGrup = async () => {
+             const n = prompt("Nama Grup:"); if(n) {
+                 const ref = await db.collection("groups").add({ name:n, participants:[currentUser.uid], lastUpdated: firebase.firestore.FieldValue.serverTimestamp() });
+                 bukaRoom(ref.id, n, 'group');
+             }
+        }
     </script>
 </body>
 </html>
