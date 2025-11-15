@@ -3,46 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WhatsApp Pro V5</title>
+    <title>WhatsApp Pro V5 (Fixed)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
         :root { 
-            --wa-teal: #008069;
-            --wa-light-green: #25d366;
-            --wa-bg: #efeae2;
-            --wa-bubble-out: #d9fdd3;
-            --wa-bubble-in: #ffffff;
-            --wa-header: #008069;
-            --wa-text-primary: #111b21;
-            --wa-text-secondary: #667781;
+            --wa-teal: #008069; --wa-light-green: #25d366; --wa-bg: #efeae2;
+            --wa-bubble-out: #d9fdd3; --wa-bubble-in: #ffffff;
+            --wa-header: #008069; --wa-text-primary: #111b21; --wa-text-secondary: #667781;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #d1d7db; margin: 0; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
         
         #app-frame { width: 100%; height: 100%; background-color: #fff; display: flex; flex-direction: column; position: relative; max-width: 450px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         
-        /* --- LOGIN & PROFILE --- */
+        /* LOADING & ERROR SCREEN */
+        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* LOGIN & PROFILE */
         .full-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .login-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; font-size: 16px; outline: none; }
         .btn-primary-wa { width: 100%; background: var(--wa-teal); color: white; border: none; padding: 10px; border-radius: 25px; font-weight: bold; font-size: 14px; }
 
-        /* --- HOME SCREEN UI --- */
+        /* HOME SCREEN */
         #home-screen { display: none; flex-direction: column; height: 100%; }
-        .home-header { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 0 rgba(0,0,0,0.05); z-index: 10; }
+        .home-header { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         .wa-logo-text { color: var(--wa-teal); font-weight: 700; font-size: 22px; }
         .header-icons i { font-size: 20px; margin-left: 20px; color: var(--wa-text-primary); cursor: pointer; }
         
-        /* SEARCH BAR */
         .search-container { padding: 8px 15px; background: white; border-bottom: 1px solid #f0f0f0; }
         .search-box { width: 100%; background: #f0f2f5; border: none; padding: 8px 15px; border-radius: 8px; outline: none; font-size: 14px; color: var(--wa-text-primary); }
 
-        /* TABS CONTENT */
         .tab-content { display: none; flex: 1; overflow-y: auto; background: white; padding-bottom: 80px; }
         .tab-content.active { display: block; }
 
-        /* LIST ITEMS (Chat/Call/Group) */
+        /* LIST ITEMS */
         .list-item { display: flex; padding: 12px 15px; cursor: pointer; align-items: center; border-bottom: 1px solid #f5f6f6; user-select: none; }
         .list-item:active { background: #f0f2f5; }
         .avatar { width: 45px; height: 45px; border-radius: 50%; background: #dfe3e5; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; margin-right: 15px; flex-shrink: 0; overflow: hidden; }
@@ -52,44 +48,28 @@
         .list-time { font-size: 11px; color: var(--wa-text-secondary); }
         .list-subtitle { font-size: 14px; color: var(--wa-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
         
-        /* Call Icons */
         .icon-call-out { color: var(--wa-light-green); transform: rotate(45deg); margin-right: 4px; }
         .icon-call-in { color: #d93025; transform: rotate(225deg); margin-right: 4px; }
 
-        /* FAB */
+        /* FAB & NAV */
         .fab { position: absolute; bottom: 90px; right: 20px; width: 55px; height: 55px; background: var(--wa-teal); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; transition: transform 0.2s; }
         .fab:active { transform: scale(0.9); }
 
-        /* BOTTOM NAV */
         .bottom-nav { display: flex; justify-content: space-around; align-items: center; background: white; border-top: 1px solid #e9edef; padding: 8px 0; position: absolute; bottom: 0; width: 100%; height: 70px; z-index: 100; }
         .nav-item { text-align: center; color: var(--wa-text-secondary); font-size: 12px; flex: 1; cursor: pointer; }
         .nav-item i { display: block; font-size: 20px; margin-bottom: 4px; width: 50px; margin: 0 auto 4px auto; border-radius: 16px; padding: 3px 0; }
         .nav-item.active { color: var(--wa-text-primary); font-weight: 600; }
         .nav-item.active i { background: #cbf5e6; color: #003d2d; }
 
-        /* --- CHAT ROOM (IMPROVED) --- */
+        /* CHAT ROOM */
         #room-screen { display: none; flex-direction: column; height: 100%; background: var(--wa-bg); position: absolute; top: 0; width: 100%; z-index: 200; }
         .room-header { background: var(--wa-teal); color: white; padding: 8px 10px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         
         .msg-list { flex: 1; overflow-y: auto; padding: 10px 5%; display: flex; flex-direction: column; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 1; background-size: 400px; }
         
-        /* BUBBLE CHAT CANTIK */
-        .msg-bubble { 
-            max-width: 75%; 
-            padding: 6px 8px; 
-            margin-bottom: 4px; 
-            border-radius: 8px; 
-            font-size: 14.2px; 
-            box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); 
-            position: relative; 
-            display: flex; 
-            flex-wrap: wrap; 
-            word-wrap: break-word;
-        }
-        
+        .msg-bubble { max-width: 75%; padding: 6px 8px; margin-bottom: 4px; border-radius: 8px; font-size: 14.2px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; display: flex; flex-wrap: wrap; word-wrap: break-word; }
         .msg-bubble.them { background: var(--wa-bubble-in); align-self: flex-start; border-top-left-radius: 0; }
         .msg-bubble.them::before { content: ""; position: absolute; top: 0; left: -8px; width: 0; height: 0; border: 8px solid transparent; border-top-color: var(--wa-bubble-in); border-right-color: var(--wa-bubble-in); transform: skewY(0deg); }
-        
         .msg-bubble.me { background: var(--wa-bubble-out); align-self: flex-end; border-top-right-radius: 0; }
         .msg-bubble.me::before { content: ""; position: absolute; top: 0; right: -8px; width: 0; height: 0; border: 8px solid transparent; border-top-color: var(--wa-bubble-out); border-left-color: var(--wa-bubble-out); transform: skewY(0deg); }
         
@@ -101,23 +81,19 @@
         .input-area { background: #f0f2f5; padding: 5px 10px; display: flex; align-items: center; min-height: 60px; }
         .input-field { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; font-size: 15px; margin: 0 5px; outline: none; background: white; }
 
-        /* EMOJI DRAWER FIX */
         #emoji-drawer { height: 0; overflow-y: auto; transition: height 0.3s; background: #e9edef; z-index: 15; display: grid; grid-template-columns: repeat(8, 1fr); }
         #emoji-drawer.open { height: 220px; padding: 10px; border-top: 1px solid #ccc; }
         .emoji-btn { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; border-radius: 5px; }
-        .emoji-btn:hover { background: rgba(0,0,0,0.05); }
 
         /* CALL UI */
         .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111b21; z-index: 99999; flex-direction: column; align-items: center; justify-content: center; }
         #incoming-overlay { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.pinimg.com/originals/48/28/e0/4828e05a7069d8f9502b90ba4d338981.jpg'); background-size: cover; color: white; }
-        
         video { width: 100%; height: 100%; object-fit: cover; }
         .active-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; z-index: 100001; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 30px; }
         .ctrl-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 20px; backdrop-filter: blur(5px); }
         .ctrl-btn.hangup { background: #f13a37; width: 60px; height: 60px; font-size: 24px; }
         .ctrl-btn.off { background: white; color: black; }
 
-        /* MODAL */
         #confirm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 10000; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 20px; border-radius: 12px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
@@ -126,7 +102,13 @@
     <input type="file" id="file-input" hidden accept="image/*,video/mp4,video/webm">
     <audio id="ringtone" loop src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Bell_ring_effect.ogg"></audio>
 
-    <div id="login-screen" class="full-overlay">
+    <div id="loading-screen">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="80" class="mb-4">
+        <div class="spinner-border text-success"></div>
+        <p class="mt-3 text-muted small">Memuat Data...</p>
+    </div>
+
+    <div id="login-screen" class="full-overlay" style="display:none;">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="70" class="mb-4">
         <h4>Selamat Datang</h4>
         <div id="phone-step" style="width:100%">
@@ -164,60 +146,43 @@
             </div>
 
             <div id="chats-view" class="tab-content active">
-                <div id="chat-list-container"></div> </div>
-            
+                <div id="chat-list-container"></div>
+            </div>
             <div id="calls-view" class="tab-content">
-                <div id="call-list-container"></div> </div>
-            
+                <div id="call-list-container"></div>
+            </div>
             <div id="groups-view" class="tab-content">
                 <div style="padding:20px; text-align:center;">
                     <button class="btn-primary-wa" onclick="createNewGroup()">+ Buat Grup Baru</button>
                 </div>
                 <div id="group-list-container"></div>
             </div>
-            
             <div id="about-view" class="tab-content" style="padding:20px; text-align:center;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="60">
                 <h5 class="mt-3">WhatsApp Clone</h5>
-                <p class="text-muted small">Versi 5.0 Ultimate</p>
+                <p class="text-muted small">Versi 5.0 Ultimate (Fixed)</p>
             </div>
 
-            <div class="fab" id="main-fab" onclick="handleFabClick()">
-                <i class="bi bi-plus-lg"></i>
-            </div>
+            <div class="fab" id="main-fab" onclick="handleFabClick()"><i class="bi bi-plus-lg"></i></div>
 
             <div class="bottom-nav">
-                <div class="nav-item active" onclick="switchTab('chats', this)">
-                    <i class="bi bi-chat-text-fill"></i> Chat
-                </div>
-                <div class="nav-item" onclick="switchTab('calls', this)">
-                    <i class="bi bi-telephone"></i> Panggilan
-                </div>
-                <div class="nav-item" onclick="switchTab('groups', this)">
-                    <i class="bi bi-people"></i> Komunitas
-                </div>
-                <div class="nav-item" onclick="switchTab('about', this)">
-                    <i class="bi bi-info-circle"></i> Fitur
-                </div>
+                <div class="nav-item active" onclick="switchTab('chats', this)"><i class="bi bi-chat-text-fill"></i> Chat</div>
+                <div class="nav-item" onclick="switchTab('calls', this)"><i class="bi bi-telephone"></i> Panggilan</div>
+                <div class="nav-item" onclick="switchTab('groups', this)"><i class="bi bi-people"></i> Komunitas</div>
+                <div class="nav-item" onclick="switchTab('about', this)"><i class="bi bi-info-circle"></i> Fitur</div>
             </div>
         </div>
 
         <div id="room-screen">
             <div class="room-header">
                 <i class="bi bi-arrow-left" style="font-size:22px; margin-right:10px; cursor:pointer;" onclick="closeRoom()"></i>
-                <div style="width:35px; height:35px; background:#dfe3e5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:10px; overflow:hidden;">
-                    <i class="bi bi-person-fill" style="color:white; font-size:20px;"></i>
-                </div>
-                <div style="flex:1;">
-                    <div style="font-weight:600; font-size:16px;" id="room-name">User</div>
-                </div>
+                <div style="width:35px; height:35px; background:#dfe3e5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:10px; overflow:hidden;"><i class="bi bi-person-fill" style="color:white; font-size:20px;"></i></div>
+                <div style="flex:1;"><div style="font-weight:600; font-size:16px;" id="room-name">User</div></div>
                 <div style="display:flex; gap:20px;">
                     <i class="bi bi-camera-video-fill" style="font-size:20px; cursor:pointer;" onclick="initiateCall('video')"></i>
                     <i class="bi bi-telephone-fill" style="font-size:18px; cursor:pointer;" onclick="initiateCall('voice')"></i>
                 </div>
-                <div id="group-actions" style="display:none; margin-left:20px;">
-                    <i class="bi bi-person-plus-fill" onclick="addMemberToGroup()"></i>
-                </div>
+                <div id="group-actions" style="display:none; margin-left:20px;"><i class="bi bi-person-plus-fill" onclick="addMemberToGroup()"></i></div>
             </div>
             <div id="messages-list" class="msg-list"></div>
             <div class="input-area">
@@ -269,6 +234,7 @@
         import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
+        // --- CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyB5o4FTyWTFIbdvpO2-vfN2_Mf750GtiXM",
             authDomain: "chatting-22bb9.firebaseapp.com",
@@ -292,11 +258,12 @@
         
         // --- AUTH ---
         auth.onAuthStateChanged(async (user) => {
+            document.getElementById('loading-screen').style.display = 'none';
             if (user) {
                 currentUser = user;
                 document.getElementById('login-screen').style.display = 'none';
                 const uDoc = await getDoc(doc(db, "users", user.uid));
-                if (uDoc.exists()) { document.getElementById('app-frame').style.display = 'flex'; loadData(); } 
+                if (uDoc.exists()) { document.getElementById('app-frame').style.display = 'flex'; document.getElementById('home-screen').style.display = 'flex'; loadData(); } 
                 else document.getElementById('profile-screen').style.display = 'flex';
             } else {
                 document.getElementById('app-frame').style.display = 'none';
@@ -306,10 +273,8 @@
         });
 
         function formatPhone(num) { return num.startsWith('08') ? '+62' + num.substring(1) : num; }
-
         window.sendOTP = () => {
-            let ph = document.getElementById('phone-number').value.trim();
-            if(!ph) return alert("Isi nomor");
+            let ph = document.getElementById('phone-number').value.trim(); if(!ph) return alert("Isi nomor");
             signInWithPhoneNumber(auth, formatPhone(ph), window.recaptchaVerifier)
                 .then(res => { window.confirmResult = res; document.getElementById('phone-step').style.display='none'; document.getElementById('otp-step').style.display='block'; })
                 .catch(e => alert(e.message));
@@ -318,11 +283,11 @@
         window.saveProfile = async () => {
             const name = document.getElementById('username-input').value;
             await setDoc(doc(db, "users", currentUser.uid), { uid: currentUser.uid, phone: currentUser.phoneNumber, displayName: name });
-            document.getElementById('profile-screen').style.display = 'none'; document.getElementById('app-frame').style.display = 'flex'; loadData();
+            document.getElementById('profile-screen').style.display = 'none'; document.getElementById('app-frame').style.display = 'flex'; document.getElementById('home-screen').style.display = 'flex'; loadData();
         };
         window.logout = () => signOut(auth).then(()=>location.reload());
 
-        // --- NAVIGATION ---
+        // --- NAV & DATA ---
         window.switchTab = (tab, el) => {
             currentTab = tab;
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active');
@@ -332,61 +297,26 @@
             document.getElementById('main-fab').style.display = tab === 'about' ? 'none' : 'flex';
         };
         window.handleFabClick = () => { if(currentTab === 'chats') promptNewChat(); else if(currentTab === 'groups') createNewGroup(); };
-
-        window.filterLists = () => {
-            const q = document.getElementById('search-bar').value.toLowerCase();
-            document.querySelectorAll('.list-item').forEach(item => {
-                const name = item.getAttribute('data-name');
-                item.style.display = name.includes(q) ? 'flex' : 'none';
-            });
-        };
-
-        window.executeDeleteChat = async () => {
-            if(chatToDelete) {
-                await deleteDoc(doc(db, "chats", chatToDelete));
-                document.getElementById('confirm-modal').style.display='none';
-            }
-        };
-
+        
         function loadData() { loadChats(); loadGroups(); loadCallHistory(); listenIncomingCalls(); }
 
-        // --- LOAD CHATS (WITH DELETE) ---
+        // --- LOAD CHATS ---
         function loadChats() {
             const q = query(collection(db, "chats"), where("participants", "array-contains", currentUser.uid), orderBy("lastUpdated", "desc"));
             onSnapshot(q, (snap) => {
-                const container = document.getElementById('chat-list-container');
-                container.innerHTML = "";
+                const container = document.getElementById('chat-list-container'); container.innerHTML = "";
                 snap.forEach(async (d) => {
                     const data = d.data();
                     const pid = data.participants.find(id => id !== currentUser.uid);
                     const pDoc = await getDoc(doc(db, "users", pid));
                     const name = pDoc.exists() ? pDoc.data().displayName : "User";
-                    
-                    const el = document.createElement('div');
-                    el.className = 'list-item';
-                    el.setAttribute('data-name', name.toLowerCase());
-                    
-                    const timeStr = data.lastUpdated ? data.lastUpdated.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
-                    
-                    el.innerHTML = `
-                        <div class="avatar">${name[0]}</div>
-                        <div class="list-info">
-                            <div class="list-top">
-                                <span class="list-title">${name}</span>
-                                <span class="list-time">${timeStr}</span>
-                            </div>
-                            <div class="list-subtitle">${data.lastMessage||""}</div>
-                        </div>
-                    `;
+                    const el = document.createElement('div'); el.className = 'list-item'; el.setAttribute('data-name', name.toLowerCase());
+                    el.innerHTML = `<div class="avatar">${name[0]}</div><div class="list-info"><div class="list-top"><span class="list-title">${name}</span><span class="list-time">${data.lastUpdated?.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||''}</span></div><div class="list-subtitle">${data.lastMessage||""}</div></div>`;
                     el.onclick = () => openRoom(d.id, name, 'private', pid);
-                    
-                    // LONG PRESS DELETE
-                    let timer;
-                    const start = () => { timer = setTimeout(() => { chatToDelete = d.id; document.getElementById('confirm-modal').style.display='flex'; }, 800); };
+                    // Delete logic
+                    let timer; const start = () => timer = setTimeout(() => { chatToDelete = d.id; document.getElementById('confirm-modal').style.display='flex'; }, 800);
                     const end = () => clearTimeout(timer);
-                    el.addEventListener('mousedown', start); el.addEventListener('mouseup', end);
-                    el.addEventListener('touchstart', start); el.addEventListener('touchend', end);
-
+                    el.addEventListener('mousedown', start); el.addEventListener('mouseup', end); el.addEventListener('touchstart', start); el.addEventListener('touchend', end);
                     container.appendChild(el);
                 });
             });
@@ -395,17 +325,11 @@
         function loadGroups() {
             const q = query(collection(db, "groups"), where("participants", "array-contains", currentUser.uid), orderBy("lastUpdated", "desc"));
             onSnapshot(q, (snap) => {
-                const container = document.getElementById('group-list-container');
-                container.innerHTML = "";
+                const container = document.getElementById('group-list-container'); container.innerHTML = "";
                 snap.forEach((d) => {
                     const data = d.data();
-                    const el = document.createElement('div');
-                    el.className = 'list-item';
-                    el.setAttribute('data-name', data.name.toLowerCase());
-                    el.innerHTML = `
-                        <div class="avatar" style="background:#666"><i class="bi bi-people-fill"></i></div>
-                        <div class="list-info"><div class="list-title">${data.name}</div><div class="list-subtitle">${data.lastMessage||"Grup dibuat"}</div></div>
-                    `;
+                    const el = document.createElement('div'); el.className = 'list-item';
+                    el.innerHTML = `<div class="avatar" style="background:#666"><i class="bi bi-people-fill"></i></div><div class="list-info"><div class="list-title">${data.name}</div><div class="list-subtitle">${data.lastMessage||"Grup dibuat"}</div></div>`;
                     el.onclick = () => openRoom(d.id, data.name, 'group');
                     container.appendChild(el);
                 });
@@ -415,41 +339,37 @@
         function loadCallHistory() {
             const q = query(collection(db, "call_history"), where("participants", "array-contains", currentUser.uid), orderBy("timestamp", "desc"));
             onSnapshot(q, (snap) => {
-                const container = document.getElementById('call-list-container');
-                container.innerHTML = "";
+                const container = document.getElementById('call-list-container'); container.innerHTML = "";
                 snap.forEach(async (d) => {
                     const data = d.data();
                     const isOut = data.callerId === currentUser.uid;
                     const pid = isOut ? data.calleeId : data.callerId;
                     const pDoc = await getDoc(doc(db, "users", pid));
                     const name = pDoc.exists() ? pDoc.data().displayName : "Unknown";
-                    const el = document.createElement('div');
-                    el.className = 'list-item';
-                    el.innerHTML = `
-                        <div class="avatar"><i class="bi bi-person-fill"></i></div>
-                        <div class="list-info">
-                            <div class="list-title" style="color:${data.status==='missed'?'#d93025':'#111'}">${name}</div>
-                            <div class="list-subtitle">
-                                <i class="bi bi-arrow-${isOut?'up-right':'down-left'} ${isOut?'icon-call-out':'icon-call-in'}"></i>
-                                ${data.timestamp?.toDate().toLocaleString()}
-                            </div>
-                        </div>
-                        <div><i class="bi bi-${data.type==='video'?'camera-video':'telephone'}-fill" style="color:var(--wa-teal)"></i></div>
-                    `;
+                    const el = document.createElement('div'); el.className = 'list-item';
+                    el.innerHTML = `<div class="avatar"><i class="bi bi-person-fill"></i></div><div class="list-info"><div class="list-title" style="color:${data.status==='missed'?'#d93025':'#111'}">${name}</div><div class="list-subtitle"><i class="bi bi-arrow-${isOut?'up-right':'down-left'} ${isOut?'icon-call-out':'icon-call-in'}"></i> ${data.timestamp?.toDate().toLocaleString()}</div></div><div><i class="bi bi-${data.type==='video'?'camera-video':'telephone'}-fill" style="color:var(--wa-teal)"></i></div>`;
                     container.appendChild(el);
                 });
             });
         }
 
+        window.filterLists = () => {
+            const q = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.list-item').forEach(item => {
+                const name = item.getAttribute('data-name');
+                if(name) item.style.display = name.includes(q) ? 'flex' : 'none';
+            });
+        };
+
+        window.executeDeleteChat = async () => { if(chatToDelete) { await deleteDoc(doc(db, "chats", chatToDelete)); document.getElementById('confirm-modal').style.display='none'; } };
+
         window.promptNewChat = async () => {
-            let ph = prompt("Nomor HP Teman (08...):");
-            if(!ph) return;
+            let ph = prompt("Nomor HP Teman (08...):"); if(!ph) return;
             ph = formatPhone(ph);
             const snap = await getDocs(query(collection(db, "users"), where("phone", "==", ph)));
             if(snap.empty) return alert("Nomor belum terdaftar");
             const target = snap.docs[0].data();
             if(target.uid === currentUser.uid) return alert("Diri sendiri?");
-            
             const chatId = [currentUser.uid, target.uid].sort().join("_");
             const chatRef = doc(db, "chats", chatId);
             if(!(await getDoc(chatRef)).exists()) {
@@ -478,6 +398,7 @@
 
         function openRoom(id, name, type, partnerId=null) {
             activeChatId = id; activeChatType = type; activePartnerId = partnerId;
+            document.getElementById('home-screen').style.display = 'none';
             document.getElementById('room-screen').style.display = 'flex';
             document.getElementById('room-name').innerText = name;
             document.getElementById('group-actions').style.display = type === 'group' ? 'block' : 'none';
@@ -489,18 +410,14 @@
                 snap.forEach(d => {
                     const m = d.data();
                     const div = document.createElement('div');
-                    div.className = `msg-bubble ${m.senderId === currentUser.uid ? 'me' : 'them'}`;
+                    const isMe = m.senderId === currentUser.uid;
+                    div.className = `msg-bubble ${isMe ? 'me' : 'them'}`;
+                    if(!isMe && !m.read) updateDoc(doc(db, colName, id, "messages", d.id), {read:true});
                     
                     let content = `<div class="msg-text">${m.text}</div>`;
-                    if(m.media) {
-                        content = m.type === 'video' ? `<video src="${m.media}" controls class="media-content"></video> ${m.text}` : `<img src="${m.media}" class="media-content"> ${m.text}`;
-                    }
+                    if(m.media) content = m.type === 'video' ? `<video src="${m.media}" controls class="media-content"></video> ${m.text}` : `<img src="${m.media}" class="media-content"> ${m.text}`;
                     
-                    // Tanda Centang
-                    const isMe = m.senderId === currentUser.uid;
-                    if(!isMe && !m.read) updateDoc(doc(db, colName, id, "messages", d.id), {read:true});
                     const tick = isMe ? `<i class="bi bi-check-all msg-tick ${m.read?'read':''}"></i>` : '';
-
                     div.innerHTML = `${content} <div class="msg-meta">${m.createdAt?.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||''} ${tick}</div>`;
                     list.appendChild(div);
                 });
@@ -508,7 +425,7 @@
             });
         }
 
-        window.closeRoom = () => { document.getElementById('room-screen').style.display = 'none'; activeChatId = null; };
+        window.closeRoom = () => { document.getElementById('room-screen').style.display = 'none'; document.getElementById('home-screen').style.display = 'flex'; activeChatId = null; };
 
         window.sendMessage = async (media=null, type='text') => {
             const inp = document.getElementById('msg-input'); const txt = inp.value.trim();
@@ -568,10 +485,8 @@
             document.getElementById('active-overlay').style.display = 'flex';
             await initPC(); await getStream(type);
             const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
-            
             callDocRef = await addDoc(collection(db, "calls"), { callerId: currentUser.uid, calleeId: activePartnerId, offer: { type: offer.type, sdp: offer.sdp }, type, status: 'offering' });
             await addDoc(collection(db, "call_history"), { callerId: currentUser.uid, calleeId: activePartnerId, type, timestamp: serverTimestamp(), status: 'dialed', participants: [currentUser.uid, activePartnerId] });
-            
             onSnapshot(doc(db, "calls", callDocRef.id), (s) => { 
                 const d = s.data(); if(!d) { cleanupCall(); return; } 
                 if(d.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(d.answer)); 
